@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 function BotanicalFlower() {
   return (
-    <img src="/blue-hibiscus.png" alt="Blue Hibiscus" className="w-full h-full" />
+    <img src="/blue-hibiscus.png" alt="Blue Hibiscus" className="w-full h-full object-contain" />
   );
 }
 
