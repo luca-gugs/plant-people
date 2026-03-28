@@ -20,9 +20,9 @@ export const ResendOTP = Email({
   async sendVerificationRequest({ identifier: email, token }) {
     const resend = new ResendAPI(process.env.AUTH_RESEND_KEY);
     const { error } = await resend.emails.send({
-      from: process.env.AUTH_EMAIL ?? "Plant People <onboarding@resend.dev>",
+      from: process.env.AUTH_EMAIL ?? "Tend <onboarding@resend.dev>",
       to: [email],
-      subject: "Your Plant People sign-in code",
+      subject: "Your Tend sign-in code",
       html: `<p>Your sign-in code is: <strong>${token}</strong></p><p>This code expires in 20 minutes.</p>`,
     });
     if (error) {

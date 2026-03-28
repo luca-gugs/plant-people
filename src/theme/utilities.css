@@ -58,3 +58,34 @@
   filter: grayscale(0);
   transform: scale(1.05);
 }
+
+/* ─── Entrance Animations ─── */
+@utility animate-fade-in {
+  animation: fade-in 600ms ease-out both;
+}
+
+@utility animate-step-transition {
+  animation: step-transition 300ms ease-out both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes step-transition {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

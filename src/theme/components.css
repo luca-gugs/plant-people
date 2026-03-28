@@ -25,6 +25,15 @@
     @apply cursor-pointer;
   }
 
+  /* ─── Outline Botanical Button ─── */
+  .btn-outline-botanical {
+    @apply w-full border border-botanical text-botanical py-3 rounded-sm;
+    @apply uppercase tracking-widest text-xs font-sans;
+    @apply hover:bg-botanical hover:text-parchment transition-colors;
+    @apply disabled:border-border disabled:text-ink-faint disabled:hover:bg-transparent;
+    @apply cursor-pointer;
+  }
+
   /* ─── Search Input ─── */
   .input-search {
     @apply bg-transparent border-b border-border pl-10 pr-4 py-2;
