@@ -8,7 +8,9 @@
  * @module
  */
 
-import type * as myFunctions from "../myFunctions.js";
+import type * as ResendOTP from "../ResendOTP.js";
+import type * as auth from "../auth.js";
+import type * as http from "../http.js";
 
 import type {
   ApiFromModules,
@@ -17,7 +19,9 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  myFunctions: typeof myFunctions;
+  ResendOTP: typeof ResendOTP;
+  auth: typeof auth;
+  http: typeof http;
 }>;
 
 /**
