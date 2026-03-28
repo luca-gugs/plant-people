@@ -22,7 +22,11 @@ export default defineSchema({
     // App fields
     householdId: v.optional(v.id("households")),
     role: v.optional(v.union(v.literal("owner"), v.literal("member"))),
-  }).index("by_householdId", ["householdId"]),
+  })
+    // Auth-required indexes (the auth library queries users by email/phone internally)
+    .index("email", ["email"])
+    .index("phone", ["phone"])
+    .index("by_householdId", ["householdId"]),
 
   devices: defineTable({
     householdId: v.id("households"),

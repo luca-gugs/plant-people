@@ -1,0 +1,60 @@
+/* ─── Academic Labels ─── */
+/* Small-caps uppercase tracking used throughout for labels */
+@utility label-sm {
+  font-family: var(--font-label);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-ink-faint);
+}
+
+@utility label-xs {
+  font-family: var(--font-label);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-ink-faint);
+}
+
+@utility label-wide {
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: var(--color-ink-faint);
+}
+
+/* ─── Botanical Heading ─── */
+@utility heading-botanical {
+  font-weight: 300;
+  font-style: italic;
+  color: var(--color-botanical);
+}
+
+/* ─── Muted Body Text ─── */
+@utility text-muted-italic {
+  color: var(--color-ink-muted);
+  font-style: italic;
+  line-height: 1.625;
+}
+
+/* ─── Ornamental Divider ─── */
+@utility divider-botanical {
+  width: 4rem;
+  height: 1px;
+  background-color: var(--color-botanical);
+}
+
+/* ─── Image Treatment ─── */
+/* Desaturated botanical illustration effect */
+@utility img-botanical {
+  mix-blend-mode: multiply;
+  opacity: 0.9;
+  filter: grayscale(0.2);
+  transition: filter 700ms, transform 1000ms;
+}
+
+@utility img-botanical-hover {
+  filter: grayscale(0);
+  transform: scale(1.05);
+}

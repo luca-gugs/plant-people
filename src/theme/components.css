@@ -1,0 +1,66 @@
+@layer components {
+  /* ─── Plant Card ─── */
+  .card-specimen {
+    @apply bg-white/40 border border-border/40 p-6 rounded-sm cursor-pointer;
+    @apply transition-all duration-500;
+  }
+  .card-specimen:hover {
+    @apply border-botanical shadow-card;
+  }
+
+  /* ─── Primary Button ─── */
+  .btn-primary {
+    @apply bg-botanical text-parchment py-3 rounded-sm;
+    @apply uppercase tracking-widest text-xs;
+    @apply hover:bg-botanical-light transition-colors;
+    @apply shadow-botanical;
+    @apply cursor-pointer;
+  }
+
+  /* ─── Secondary / Outline Button ─── */
+  .btn-secondary {
+    @apply px-6 border border-border py-3 rounded-sm;
+    @apply text-xs uppercase tracking-widest;
+    @apply hover:bg-parchment-dark transition-colors;
+    @apply cursor-pointer;
+  }
+
+  /* ─── Search Input ─── */
+  .input-search {
+    @apply bg-transparent border-b border-border pl-10 pr-4 py-2;
+    @apply focus:outline-none focus:border-botanical;
+    @apply text-sm italic transition-colors;
+  }
+
+  /* ─── Sidebar Panel ─── */
+  .panel-sidebar {
+    @apply bg-parchment-dark p-8 rounded-sm border border-border/60 shadow-inner;
+  }
+
+  /* ─── Double-Border Decorative Panel ─── */
+  .panel-ornate {
+    @apply p-8 border-2 border-double border-border rounded-sm;
+  }
+
+  /* ─── Status Badge: Alert ─── */
+  .badge-alert {
+    @apply flex items-center gap-2 bg-alert text-white px-3 py-1 rounded-full;
+    @apply text-[10px] uppercase tracking-[0.2em];
+  }
+
+  /* ─── Specimen Number Tag ─── */
+  .tag-specimen {
+    @apply bg-white/90 backdrop-blur-sm px-2 py-1 border border-border;
+    @apply text-[10px] uppercase tracking-tighter text-botanical font-sans;
+  }
+
+  /* ─── Modal Overlay ─── */
+  .modal-backdrop {
+    @apply fixed inset-0 bg-ink/40 backdrop-blur-sm;
+  }
+
+  .modal-content {
+    @apply bg-parchment border-4 border-double border-border overflow-hidden;
+    @apply max-h-[90vh] overflow-y-auto;
+  }
+}

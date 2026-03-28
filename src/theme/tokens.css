@@ -1,0 +1,22 @@
+@theme {
+  /* ─── Colors: Parchment & Earth Tones ─── */
+  --color-parchment: #FBF8F3;
+  --color-parchment-dark: #EFEBE4;
+  --color-selection: #E5DCC5;
+  --color-border: #D4CBB7;
+  --color-ink: #2C2C2C;
+  --color-ink-muted: #6B5E4C;
+  --color-ink-faint: #8C7B65;
+  --color-botanical: #3A4D39;
+  --color-botanical-light: #4F634E;
+  --color-alert: #A63D40;
+  --color-water: #507DBC;
+
+  /* ─── Fonts ─── */
+  --font-body: 'Lora', Georgia, serif;
+  --font-label: ui-sans-serif, system-ui, sans-serif;
+
+  /* ─── Shadows ─── */
+  --shadow-card: 0 20px 25px -5px rgba(212, 203, 183, 0.1);
+  --shadow-botanical: 0 10px 15px -3px rgba(58, 77, 57, 0.2);
+}
