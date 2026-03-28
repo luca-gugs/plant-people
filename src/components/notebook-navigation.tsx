@@ -109,6 +109,379 @@ const FIELD_NOTE_CLIP = `polygon(
   0.6% 6%
 )`;
 
+// ── Notebook Trigger ──────────────────────────────────
+function NotebookTrigger({
+  isOpen,
+  onClick,
+}: {
+  isOpen: boolean;
+  onClick: () => void;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+  const BOOK_W = 72;
+  const BOOK_H = 90;
+  const SPINE_W = 14;
+  const COVER_W = BOOK_W - SPINE_W;
+  const PAGE_OFFSETS = [
+    { rotate: 0, x: 0, delay: 0 },
+    { rotate: -8, x: -1, delay: 0.04 },
+    { rotate: -18, x: -2, delay: 0.08 },
+    { rotate: -30, x: -3, delay: 0.12 },
+    { rotate: -44, x: -4, delay: 0.16 },
+  ];
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      aria-label={isOpen ? "Close navigation" : "Open navigation"}
+      style={{
+        width: BOOK_W,
+        height: BOOK_H,
+        perspective: "600px",
+        background: "none",
+        border: "none",
+        padding: 0,
+        cursor: "pointer",
+        position: "relative",
+        display: "block",
+      }}
+    >
+      {/* ── Spine ── */}
+      <motion.div
+        animate={{ scaleX: isOpen ? 1.08 : 1, opacity: isOpen ? 0 : 1 }}
+        transition={{
+          type: "spring",
+          damping: isOpen ? 16 : 22,
+          stiffness: isOpen ? 140 : 300,
+          delay: isOpen ? 0 : 0.03,
+        }}
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 5,
+          bottom: 5,
+          width: SPINE_W,
+          borderRadius: "4px 2px 2px 4px",
+          background:
+            "linear-gradient(to right, #1F2E1E 0%, #2E4530 45%, #3A4D39 100%)",
+          boxShadow:
+            "inset -3px 0 4px rgba(0,0,0,0.4), 3px 0 6px rgba(0,0,0,0.3)",
+          zIndex: 10,
+          transformOrigin: "left center",
+        }}
+      >
+        {/* Spine ribs */}
+        {[16, 32, 50, 68, 84].map((pct) => (
+          <div
+            key={pct}
+            style={{
+              position: "absolute",
+              top: `${pct}%`,
+              left: 2,
+              right: 2,
+              height: 1,
+              background: "rgba(0,0,0,0.3)",
+              borderRadius: 1,
+            }}
+          />
+        ))}
+        {/* Gold inlay */}
+        <div
+          style={{
+            position: "absolute",
+            top: 10,
+            bottom: 10,
+            left: 4,
+            width: 1.5,
+            background:
+              "linear-gradient(to bottom, transparent, rgba(196,180,138,0.6) 25%, rgba(196,180,138,0.6) 75%, transparent)",
+          }}
+        />
+      </motion.div>
+
+      {/* ── Fanned pages ── */}
+      {PAGE_OFFSETS.map((p, i) => (
+        <motion.div
+          key={i}
+          animate={{
+            rotateY: isOpen ? p.rotate : 0,
+            x: isOpen ? p.x : 0,
+          }}
+          transition={{
+            type: "spring",
+            damping: 20,
+            stiffness: 130,
+            delay: isOpen ? p.delay : (PAGE_OFFSETS.length - 1 - i) * 0.04,
+          }}
+          style={{
+            position: "absolute",
+            left: SPINE_W - 1,
+            top: 7,
+            bottom: 7,
+            width: COVER_W + 1,
+            borderRadius: "1px 4px 4px 1px",
+            transformOrigin: "left center",
+            transformStyle: "preserve-3d",
+            zIndex: 2 + i,
+            overflow: "hidden",
+            background:
+              i === 0
+                ? "linear-gradient(to right, #EDE4D0 0%, #F5EED8 60%, #F8F3E5 100%)"
+                : `linear-gradient(to right, #EAE0CA ${i * 2}%, #F2EAD4 60%, #F6F0E0 100%)`,
+          }}
+        >
+          {/* Ruled lines on top page */}
+          {i === 0 &&
+            [14, 27, 40, 53, 66, 79].map((pct) => (
+              <div
+                key={pct}
+                style={{
+                  position: "absolute",
+                  top: `${pct}%`,
+                  left: 8,
+                  right: 6,
+                  height: "0.6px",
+                  background: "rgba(160,135,90,0.3)",
+                }}
+              />
+            ))}
+          {/* Right-edge shadow */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(to right, rgba(0,0,0,0.04) 0%, transparent 30%, rgba(0,0,0,0.03) 100%)",
+            }}
+          />
+        </motion.div>
+      ))}
+
+      {/* ── Front cover ── */}
+      <motion.div
+        animate={{ rotateY: isOpen ? -158 : 0 }}
+        transition={{ type: "spring", damping: 22, stiffness: 140 }}
+        style={{
+          position: "absolute",
+          left: SPINE_W - 1,
+          top: 0,
+          right: 0,
+          bottom: 0,
+          transformOrigin: "left center",
+          transformStyle: "preserve-3d",
+          zIndex: 8,
+          borderRadius: "1px 5px 5px 1px",
+        }}
+      >
+        {/* Front face */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            borderRadius: "1px 5px 5px 1px",
+            background:
+              "linear-gradient(148deg, #3E5A3D 0%, #2E4530 55%, #253D26 100%)",
+            boxShadow:
+              "3px 0 0 rgba(0,0,0,0.2), 5px 3px 16px rgba(0,0,0,0.32), inset 1px 0 0 rgba(255,255,255,0.07)",
+            overflow: "hidden",
+            backfaceVisibility: "hidden",
+          }}
+        >
+          {/* Cloth grain */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23g)' opacity='0.14'/%3E%3C/svg%3E")`,
+              mixBlendMode: "overlay",
+            }}
+          />
+          {/* Inset border */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 5,
+              border: "0.75px solid rgba(196,180,138,0.32)",
+              borderRadius: 3,
+            }}
+          />
+          {/* Cover content */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 10,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 4,
+            }}
+          >
+            <div
+              style={{
+                width: "72%",
+                height: "0.6px",
+                background:
+                  "linear-gradient(to right, transparent, rgba(196,180,138,0.7), transparent)",
+              }}
+            />
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 2C6 2 2 8 2 14c0 4 2.5 6.5 6 7.5C10 22 12 20 12 20s2 2 4 1.5c3.5-1 6-3.5 6-7.5 0-6-4-12-10-12z"
+                fill="rgba(196,180,138,0.55)"
+                stroke="rgba(196,180,138,0.4)"
+                strokeWidth="0.5"
+              />
+              <line
+                x1="12"
+                y1="20"
+                x2="12"
+                y2="8"
+                stroke="rgba(196,180,138,0.35)"
+                strokeWidth="0.7"
+              />
+            </svg>
+            <span
+              style={{
+                fontFamily: "Georgia, serif",
+                fontSize: 7.5,
+                letterSpacing: "0.22em",
+                color: "rgba(220,205,165,0.72)",
+                textTransform: "uppercase",
+                lineHeight: 1.4,
+                textAlign: "center",
+                whiteSpace: "pre-line",
+              }}
+            >
+              {"Field\nNotes"}
+            </span>
+            <div
+              style={{
+                width: "72%",
+                height: "0.6px",
+                background:
+                  "linear-gradient(to right, transparent, rgba(196,180,138,0.7), transparent)",
+              }}
+            />
+          </div>
+          {/* Gloss shimmer */}
+          <motion.div
+            animate={
+              isHovered || isOpen
+                ? { x: ["-100%", "200%"], opacity: [0, 0.55, 0] }
+                : { x: "-100%", opacity: 0 }
+            }
+            transition={{ duration: 0.55, ease: "easeInOut", delay: 0.05 }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.38) 50%, transparent 65%)",
+              borderRadius: "1px 5px 5px 1px",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Static gloss */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 45%, rgba(0,0,0,0.07) 100%)",
+              borderRadius: "1px 5px 5px 1px",
+            }}
+          />
+        </div>
+
+        {/* Back face (pastedown) */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            borderRadius: "1px 5px 5px 1px",
+            background: "linear-gradient(148deg, #EDE4D0 0%, #E5D9C0 100%)",
+            boxShadow: "inset 3px 0 8px rgba(0,0,0,0.14)",
+            backfaceVisibility: "hidden",
+            transform: "rotateY(180deg)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: 6,
+              border: "0.75px solid rgba(140,110,60,0.2)",
+              borderRadius: 2,
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "radial-gradient(ellipse at 40% 40%, rgba(196,180,138,0.09) 0%, transparent 70%)",
+            }}
+          />
+        </div>
+      </motion.div>
+
+      {/* ── Shadow ── */}
+      <motion.div
+        animate={{
+          scaleX: isOpen ? 1.6 : 1,
+          opacity: isOpen ? 0.28 : 0.14,
+        }}
+        transition={{ type: "spring", damping: 22, stiffness: 140 }}
+        style={{
+          position: "absolute",
+          bottom: -6,
+          left: SPINE_W,
+          right: 0,
+          height: 10,
+          background: "rgba(30,24,12,0.5)",
+          filter: "blur(6px)",
+          borderRadius: "50%",
+          transformOrigin: "left center",
+          zIndex: 0,
+        }}
+      />
+
+      {/* ── Bookmark ribbon ── */}
+      <motion.div
+        animate={{
+          y: isOpen ? 6 : 0,
+          scaleY: isOpen ? 1.1 : 1,
+        }}
+        transition={{
+          type: "spring",
+          damping: 20,
+          stiffness: 180,
+          delay: 0.06,
+        }}
+        style={{
+          position: "absolute",
+          right: 10,
+          top: -5,
+          width: 7,
+          height: 22,
+          zIndex: 9,
+          background: "linear-gradient(to bottom, #9C4A4A, #7A3535)",
+          clipPath: "polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%)",
+          boxShadow: "0 2px 5px rgba(0,0,0,0.26)",
+        }}
+      />
+    </button>
+  );
+}
+
 export default function NotebookNavigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("ledger");
@@ -121,59 +494,7 @@ export default function NotebookNavigation() {
   return (
     <div className="fixed top-5 right-5 z-50 flex flex-col items-end">
       {/* ── Toggle button ── */}
-      <motion.button
-        onClick={() => setIsOpen((v) => !v)}
-        whileTap={{ scale: 0.93 }}
-        aria-label={isOpen ? "Close navigation" : "Open navigation"}
-        className={`relative z-50 w-11 h-11 flex items-center justify-center rounded-full transition-all duration-300 ${isOpen ? "bg-[#FBF8F3] text-[#3A4D39]" : "bg-[#3A4D39] text-[#E8DFC8]"}`}
-        style={{
-          boxShadow: isOpen
-            ? "inset 0 2px 4px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.08), 0 0 0 2px #D4CBB7"
-            : "0 2px 0 #253528, 0 4px 12px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.10)",
-        }}
-      >
-        <span
-          className="absolute inset-[3px] rounded-full pointer-events-none"
-          style={{
-            background: isOpen
-              ? "linear-gradient(160deg, rgba(255,255,255,0.55) 0%, transparent 55%)"
-              : "linear-gradient(160deg, rgba(255,255,255,0.18) 0%, transparent 55%)",
-            border: "1px solid rgba(255,255,255,0.10)",
-          }}
-        />
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            <motion.span
-              key="close"
-              initial={{ rotate: -45, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 45, opacity: 0 }}
-              transition={{ duration: 0.18 }}
-              className="relative text-[#3A4D39] select-none"
-              style={{ fontFamily: "Georgia, serif", fontSize: 18, lineHeight: 1 }}
-            >
-              ✕
-            </motion.span>
-          ) : (
-            <motion.span
-              key="open"
-              initial={{ rotate: 45, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -45, opacity: 0 }}
-              transition={{ duration: 0.18 }}
-              className="relative select-none"
-              style={{
-                fontFamily: "Georgia, serif",
-                fontSize: 18,
-                lineHeight: 1,
-                letterSpacing: 1,
-              }}
-            >
-              ☰
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </motion.button>
+      <NotebookTrigger isOpen={isOpen} onClick={() => setIsOpen((v) => !v)} />
 
       {/* ── Field Note Panel ── */}
       <AnimatePresence>
@@ -245,11 +566,7 @@ export default function NotebookNavigation() {
                   fill="none"
                   aria-hidden="true"
                 >
-                  <path
-                    d="M36 0 L36 36 L0 0 Z"
-                    fill="#E2D8C0"
-                    opacity="0.7"
-                  />
+                  <path d="M36 0 L36 36 L0 0 Z" fill="#E2D8C0" opacity="0.7" />
                   <path
                     d="M36 0 L0 0 L36 36"
                     stroke="#C8BC9E"
@@ -278,11 +595,7 @@ export default function NotebookNavigation() {
                   fill="none"
                   aria-hidden="true"
                 >
-                  <path
-                    d="M0 28 L0 0 L28 28 Z"
-                    fill="#E4D9C2"
-                    opacity="0.6"
-                  />
+                  <path d="M0 28 L0 0 L28 28 Z" fill="#E4D9C2" opacity="0.6" />
                   <path
                     d="M0 28 L28 28 L0 0"
                     stroke="#C8BC9E"

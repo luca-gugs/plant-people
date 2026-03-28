@@ -9,3 +9,4 @@ Convex agent skills for common tasks can be installed by running `npx convex ai-
 ## Conventions
 
 - Component files use **kebab-case** naming: `plant-card.tsx`, `search-bar.tsx`, etc.
+- Use **react-hook-form** for all form state management.

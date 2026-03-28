@@ -5,6 +5,7 @@ import Landing from "./pages/landing";
 import SignIn from "./pages/sign-in";
 import HouseholdSetup from "./pages/household-setup";
 import Dashboard from "./pages/dashboard";
+import NotFound from "./pages/not-found";
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +29,8 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      // Catch-all — unmatched paths show the 404 page
+      { path: "*", element: <NotFound /> },
     ],
   },
 ]);

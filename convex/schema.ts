@@ -40,15 +40,28 @@ export default defineSchema({
 
   plantBoxes: defineTable({
     householdId: v.id("households"),
-    deviceId: v.id("devices"),
     name: v.string(),
     location: v.optional(v.string()),
-    sensorChannel: v.number(),
-    pumpChannel: v.number(),
-    moistureThresholdLow: v.number(),
-    moistureThresholdHigh: v.number(),
-    maxPumpDurationMs: v.number(),
-    wateringMode: v.union(v.literal("auto"), v.literal("manual")),
+    // Visual / descriptive fields
+    description: v.optional(v.string()),
+    lightCondition: v.optional(
+      v.union(
+        v.literal("full_sun"),
+        v.literal("partial_shade"),
+        v.literal("deep_shade"),
+      ),
+    ),
+    coverImageUrl: v.optional(v.string()),
+    // Hardware binding fields (optional until device is paired)
+    deviceId: v.optional(v.id("devices")),
+    sensorChannel: v.optional(v.number()),
+    pumpChannel: v.optional(v.number()),
+    moistureThresholdLow: v.optional(v.number()),
+    moistureThresholdHigh: v.optional(v.number()),
+    maxPumpDurationMs: v.optional(v.number()),
+    wateringMode: v.optional(
+      v.union(v.literal("auto"), v.literal("manual")),
+    ),
   })
     .index("by_householdId", ["householdId"])
     .index("by_deviceId", ["deviceId"]),
