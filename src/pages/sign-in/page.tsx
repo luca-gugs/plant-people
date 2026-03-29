@@ -74,7 +74,7 @@ export default function SignIn() {
           animate={{ opacity: 1 }}
           transition={{ duration: 1.6, delay: 0.3, ease: "easeOut" }}
         >
-          sign in
+          Sign In
         </motion.h1>
 
         {/* Hairline divider */}
@@ -124,7 +124,7 @@ export default function SignIn() {
                 >
                   {emailForm.formState.isSubmitting
                     ? "Sending\u2026"
-                    : "Send code"}
+                    : "Send Code"}
                 </button>
               </motion.form>
             ) : (
