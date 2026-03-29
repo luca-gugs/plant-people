@@ -8,7 +8,9 @@ import {
   History,
   Search,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 const TABS = [
   { id: "ledger", label: "The Ledger", icon: Book, roman: "I" },
@@ -483,6 +485,7 @@ function NotebookTrigger({
 }
 
 export default function NotebookNavigation() {
+  const { signOut } = useAuthActions();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("ledger");
   const [query, setQuery] = useState("");
@@ -855,6 +858,25 @@ export default function NotebookNavigation() {
                       ✦
                     </text>
                   </svg>
+                </div>
+
+                {/* ── Sign out ── */}
+                <div className="px-5 pt-1">
+                  <button
+                    onClick={() => void signOut()}
+                    className="w-full flex items-center justify-center gap-2 py-2 rounded-sm transition-colors hover:bg-[rgba(58,77,57,0.08)] cursor-pointer"
+                  >
+                    <LogOut
+                      size={12}
+                      style={{ color: "#8C7B65" }}
+                    />
+                    <span
+                      className="text-[11px] italic text-[#5C4F3A]"
+                      style={{ fontFamily: "Georgia, serif" }}
+                    >
+                      Sign Out
+                    </span>
+                  </button>
                 </div>
 
                 {/* ── Footer colophon ── */}
