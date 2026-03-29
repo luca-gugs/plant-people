@@ -102,6 +102,21 @@ export const remove = mutation({
     if (box === null || box.householdId !== user.householdId)
       throw new Error("Not authorized");
 
+    // Cascade-delete plant images
+    let plantImgs = await ctx.db
+      .query("plantImages")
+      .withIndex("by_plantId", (q) => q.eq("plantId", args.plantId))
+      .take(256);
+    while (plantImgs.length > 0) {
+      for (const img of plantImgs) {
+        await ctx.db.delete("plantImages", img._id);
+      }
+      plantImgs = await ctx.db
+        .query("plantImages")
+        .withIndex("by_plantId", (q) => q.eq("plantId", args.plantId))
+        .take(256);
+    }
+
     await ctx.db.delete("plants", args.plantId);
   },
 });

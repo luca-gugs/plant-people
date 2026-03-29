@@ -1,6 +1,9 @@
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Doc } from "../../../../convex/_generated/dataModel";
-import { Leaf, Droplets, Calendar } from "lucide-react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { Doc, Id } from "../../../../convex/_generated/dataModel";
+import { Leaf, Droplets, Calendar, Camera, Loader2, X } from "lucide-react";
 
 interface PlantDetailModalProps {
   plant: Doc<"plants"> | null;
@@ -23,6 +26,36 @@ export default function PlantDetailModal({
   onClose,
   onUpdateStatus,
 }: PlantDetailModalProps) {
+  const plantImages =
+    useQuery(
+      api.plantImages.list,
+      plant !== null ? { plantId: plant._id } : "skip",
+    ) ?? [];
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl);
+  const addImage = useMutation(api.plantImages.add);
+  const removeImage = useMutation(api.plantImages.remove);
+  const [isUploading, setIsUploading] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleImageFileSelected(file: File) {
+    if (!plant) return;
+    setIsUploading(true);
+    try {
+      const postUrl = await generateUploadUrl();
+      const result = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      const { storageId } = (await result.json()) as {
+        storageId: Id<"_storage">;
+      };
+      await addImage({ plantId: plant._id, storageId });
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
   return (
     <AnimatePresence>
       {plant && (
@@ -44,14 +77,133 @@ export default function PlantDetailModal({
             className="relative modal-content w-full max-w-4xl"
           >
             <div className="grid grid-cols-1 md:grid-cols-2">
-              {/* Left: botanical illustration placeholder */}
-              <div className="h-full min-h-[300px] bg-parchment-dark relative flex items-center justify-center">
-                <Leaf className="w-20 h-20 text-border" />
-                {plant.species && (
-                  <div className="absolute top-6 left-6 p-4 border border-botanical/30 italic text-sm text-botanical">
-                    "{plant.species}"
+              {/* Left: photograph section */}
+              <div className="h-full min-h-[300px] bg-parchment-dark relative flex flex-col">
+                {/* Main image or placeholder */}
+                <div className="flex-1 relative flex items-center justify-center overflow-hidden">
+                  {plantImages.length > 0 ? (
+                    <img
+                      src={plantImages[0].url}
+                      alt="Plant photograph"
+                      className="w-full h-full object-cover"
+                      style={{ filter: "sepia(15%) grayscale(10%)" }}
+                    />
+                  ) : (
+                    <Leaf className="w-20 h-20 text-border" />
+                  )}
+                  {plant.species && (
+                    <div className="absolute top-6 left-6 p-4 border border-botanical/30 italic text-sm text-botanical">
+                      "{plant.species}"
+                    </div>
+                  )}
+                  {/* Remove button for the featured image */}
+                  {plantImages.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        void removeImage({
+                          imageId: plantImages[0]._id,
+                        })
+                      }
+                      aria-label="Remove photograph"
+                      className="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer group-hover:opacity-100"
+                      style={{
+                        width: "24px",
+                        height: "24px",
+                        background: "rgba(60,30,10,0.7)",
+                        borderRadius: "2px",
+                      }}
+                    >
+                      <X className="w-3 h-3" style={{ color: "#F5EDD8" }} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Thumbnail strip for additional images */}
+                {plantImages.length > 1 && (
+                  <div
+                    className="flex gap-1 p-2 overflow-x-auto"
+                    style={{ background: "rgba(220,205,175,0.8)" }}
+                  >
+                    {plantImages.slice(1).map((img) => (
+                      <div
+                        key={img._id}
+                        className="relative group flex-shrink-0"
+                        style={{ width: "48px", height: "48px" }}
+                      >
+                        <img
+                          src={img.url}
+                          alt="Plant photograph"
+                          className="w-full h-full object-cover"
+                          style={{ filter: "sepia(15%)", borderRadius: "2px" }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void removeImage({ imageId: img._id })
+                          }
+                          aria-label="Remove photograph"
+                          className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                          style={{
+                            width: "16px",
+                            height: "16px",
+                            background: "rgba(60,30,10,0.75)",
+                            borderRadius: "2px",
+                          }}
+                        >
+                          <X
+                            className="w-2 h-2"
+                            style={{ color: "#F5EDD8" }}
+                          />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
+
+                {/* Upload bar */}
+                <div
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{
+                    background: "rgba(235,220,195,0.6)",
+                    borderTop: "1px solid rgba(160,130,80,0.2)",
+                  }}
+                >
+                  <span
+                    className="font-sans uppercase tracking-widest"
+                    style={{ fontSize: "8px", color: "#8B6340" }}
+                  >
+                    {plantImages.length} Photograph
+                    {plantImages.length !== 1 ? "s" : ""}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="flex items-center gap-1.5 font-sans uppercase tracking-widest transition-all duration-200 hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    style={{ fontSize: "8px", color: "#5C3D1E" }}
+                  >
+                    {isUploading ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Camera className="w-3 h-3" />
+                    )}
+                    <span>{isUploading ? "Uploading..." : "Add Photo"}</span>
+                  </button>
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        void handleImageFileSelected(file);
+                        e.target.value = "";
+                      }
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Right: details */}
