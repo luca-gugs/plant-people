@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
 import { Droplets, Sun, Wifi, WifiOff } from "lucide-react";
+import DeviceSetupWizard from "./components/device-setup-wizard";
 import PlantBoxHeader from "./components/plant-box-header";
 import PlantList from "./components/plant-list";
 import MoistureChart from "./components/moisture-chart";
@@ -29,6 +30,7 @@ export default function PlantBoxPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [showDeviceSetup, setShowDeviceSetup] = useState(false);
 
   const updatePlant = useMutation(api.plants.update);
 
@@ -154,48 +156,55 @@ export default function PlantBoxPage() {
                   <span className="label-xs">Soil Moisture</span>
                 </div>
 
-                {/* Light / Device */}
-                <div>
-                  {box.lightCondition ? (
-                    <>
-                      <Sun className="w-6 h-6 text-ink-faint mx-auto mb-2 opacity-80" />
-                      <p
-                        className="text-xl"
-                        style={{ fontFamily: "Georgia, serif" }}
-                      >
-                        {LIGHT_BY_VALUE[box.lightCondition]?.label ??
-                          box.lightCondition}
-                      </p>
-                      <span className="label-xs">Light</span>
-                    </>
-                  ) : hasDevice ? (
-                    <>
-                      {box.deviceStatus === "online" ? (
-                        <Wifi className="w-6 h-6 text-botanical mx-auto mb-2 opacity-80" />
-                      ) : (
-                        <WifiOff className="w-6 h-6 text-ink-faint mx-auto mb-2 opacity-80" />
-                      )}
-                      <p
-                        className="text-2xl capitalize"
-                        style={{ fontFamily: "Georgia, serif" }}
-                      >
-                        {box.deviceStatus ?? "Unknown"}
-                      </p>
-                      <span className="label-xs">Device</span>
-                    </>
-                  ) : (
-                    <>
+                {/* Light */}
+                {box.lightCondition && (
+                  <div>
+                    <Sun className="w-6 h-6 text-ink-faint mx-auto mb-2 opacity-80" />
+                    <p
+                      className="text-xl"
+                      style={{ fontFamily: "Georgia, serif" }}
+                    >
+                      {LIGHT_BY_VALUE[box.lightCondition]?.label ??
+                        box.lightCondition}
+                    </p>
+                    <span className="label-xs">Light</span>
+                  </div>
+                )}
+
+                {/* Device */}
+                {hasDevice ? (
+                  <div>
+                    {box.deviceStatus === "online" ? (
+                      <Wifi className="w-6 h-6 text-botanical mx-auto mb-2 opacity-80" />
+                    ) : (
                       <WifiOff className="w-6 h-6 text-ink-faint mx-auto mb-2 opacity-80" />
-                      <p
-                        className="text-2xl"
-                        style={{ fontFamily: "Georgia, serif" }}
-                      >
-                        None
-                      </p>
-                      <span className="label-xs">Device</span>
-                    </>
-                  )}
-                </div>
+                    )}
+                    <p
+                      className="text-2xl capitalize"
+                      style={{ fontFamily: "Georgia, serif" }}
+                    >
+                      {box.deviceStatus ?? "Unknown"}
+                    </p>
+                    <span className="label-xs">Device</span>
+                  </div>
+                ) : (
+                  <div>
+                    <WifiOff className="w-6 h-6 text-ink-faint mx-auto mb-2 opacity-80" />
+                    <p
+                      className="text-2xl"
+                      style={{ fontFamily: "Georgia, serif" }}
+                    >
+                      None
+                    </p>
+                    <span className="label-xs">Device</span>
+                    <button
+                      onClick={() => setShowDeviceSetup(true)}
+                      className="btn-outline-botanical mt-3 text-[10px]"
+                    >
+                      Set Up Device
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
 
@@ -218,6 +227,14 @@ export default function PlantBoxPage() {
         onClose={() => setSelectedPlantId(null)}
         onUpdateStatus={handleUpdatePlantStatus}
       />
+
+      {/* Device setup wizard modal */}
+      {showDeviceSetup && (
+        <DeviceSetupWizard
+          plantBoxId={plantBoxId}
+          onClose={() => setShowDeviceSetup(false)}
+        />
+      )}
 
       {/* Footer */}
       <footer className="mt-20 py-12 border-t border-border/60 text-center">

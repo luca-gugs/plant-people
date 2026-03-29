@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery, useMutation } from "convex/react";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import {
@@ -8,7 +9,6 @@ import {
   Wifi,
   Droplets,
   Zap,
-  ChevronRight,
   Check,
   AlertTriangle,
   Usb,
@@ -16,6 +16,7 @@ import {
   Wrench,
   Gauge,
   CircleCheckBig,
+  X,
 } from "lucide-react";
 import "esp-web-tools";
 
@@ -91,14 +92,38 @@ function isChromiumBrowser(): boolean {
   return /Chrome/.test(ua) && !/Firefox/.test(ua);
 }
 
+// ─── Animation variants ───
+
+const mapVariants: Variants = {
+  hidden: { scaleX: 0, opacity: 0 },
+  visible: {
+    scaleX: 1,
+    opacity: 1,
+    transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
+  },
+  exit: {
+    scaleX: 0,
+    opacity: 0,
+    transition: { duration: 0.3, ease: "easeInOut" },
+  },
+};
+
+const stepVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  exit: { opacity: 0, y: -10, transition: { duration: 0.15 } },
+};
+
 // ─── Component ───
 
 interface DeviceSetupWizardProps {
   plantBoxId: Id<"plantBoxes">;
+  onClose?: () => void;
 }
 
 export default function DeviceSetupWizard({
   plantBoxId,
+  onClose,
 }: DeviceSetupWizardProps) {
   const [currentStep, setCurrentStep] = useState<StepId>("intro");
   const devices = useQuery(api.devices.list);
@@ -106,6 +131,16 @@ export default function DeviceSetupWizard({
   const updateBox = useMutation(api.plantBoxes.update);
 
   const stepIndex = STEPS.findIndex((s) => s.id === currentStep);
+  const StepIcon = STEPS[stepIndex].icon;
+
+  // Close on Escape key
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose?.();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   function goNext() {
     if (stepIndex < STEPS.length - 1) {
@@ -120,96 +155,165 @@ export default function DeviceSetupWizard({
   }
 
   return (
-    <div>
-      <h2 className="text-xl font-light italic text-ink mb-2">
-        Automated Watering Setup
-      </h2>
-      <p className="text-sm text-muted-italic mb-6">
-        No device is paired to this station yet. Follow the steps below to set
-        up automated watering.
-      </p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 font-body">
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="modal-backdrop"
+        onClick={onClose}
+      />
 
-      {/* ─── Step progress indicator ─── */}
-      <div className="flex items-center gap-2 mb-8 flex-wrap">
-        {STEPS.map((step, i) => {
-          const Icon = step.icon;
-          const isActive = i === stepIndex;
-          const isComplete = i < stepIndex;
-          return (
-            <div key={step.id} className="flex items-center gap-2">
-              <button
-                onClick={() => i <= stepIndex && setCurrentStep(step.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs transition-colors ${
-                  isActive
-                    ? "bg-ink text-parchment"
-                    : isComplete
-                      ? "text-ink opacity-70"
-                      : "text-muted-italic opacity-40"
-                }`}
-              >
-                {isComplete ? (
-                  <Check className="w-3 h-3" />
-                ) : (
-                  <Icon className="w-3 h-3" />
-                )}
-                <span className="hidden md:inline">{step.title}</span>
-              </button>
-              {i < STEPS.length - 1 && (
-                <ChevronRight className="w-3 h-3 text-muted-italic opacity-30" />
-              )}
+      {/* Modal */}
+      <motion.div
+        variants={mapVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        className="relative modal-content w-full max-w-4xl flex flex-col md:flex-row min-h-[600px]"
+      >
+        {/* ─── Side Panel ─── */}
+        <div className="hidden md:flex w-1/3 bg-parchment-dark border-r border-border/60 flex-col items-center justify-center p-8">
+          <div className="text-center space-y-6">
+            <div className="divider-botanical mx-auto opacity-40" />
+            <div>
+              <span className="label-xs block mb-2">Installation Protocol</span>
+              <h2 className="text-3xl heading-botanical leading-tight">
+                Device Setup
+              </h2>
             </div>
-          );
-        })}
-      </div>
+            <p className="text-xs text-muted-italic px-4">
+              "Continuous substrate monitoring for informed irrigation decisions."
+            </p>
+            <div className="divider-botanical mx-auto opacity-40" />
 
-      {/* ─── Step content ─── */}
-      <div className="border border-border/40 p-6">
-        {/* Step header */}
-        <h3 className="text-lg text-ink mb-1">{STEPS[stepIndex].title}</h3>
-        <p className="text-sm text-muted-italic mb-6">
-          {STEPS[stepIndex].description}
-        </p>
+            {/* Progress visualization */}
+            <div className="pt-8 space-y-3 w-full">
+              {STEPS.map((step, i) => (
+                <button
+                  key={step.id}
+                  onClick={() => i <= stepIndex && setCurrentStep(step.id)}
+                  className="flex items-center gap-3 w-full text-left"
+                  disabled={i > stepIndex}
+                >
+                  <div
+                    className={`w-2 h-2 rounded-full border transition-colors shrink-0 ${
+                      i === stepIndex
+                        ? "bg-botanical border-botanical"
+                        : i < stepIndex
+                          ? "bg-ink-faint border-ink-faint"
+                          : "border-border"
+                    }`}
+                  />
+                  <span
+                    className={`label-xs transition-opacity ${
+                      i === stepIndex
+                        ? "!text-botanical font-bold"
+                        : i < stepIndex
+                          ? "!text-ink-faint"
+                          : "opacity-40"
+                    }`}
+                  >
+                    {step.title}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
-        {/* Step-specific content */}
-        {currentStep === "intro" && <IntroStep onNext={goNext} />}
-        {currentStep === "flash-firmware" && (
-          <FlashFirmwareStep onNext={goNext} onBack={goBack} />
-        )}
-        {currentStep === "assembly" && (
-          <AssemblyStep onNext={goNext} onBack={goBack} />
-        )}
-        {currentStep === "connect-wifi" && (
-          <ConnectWifiStep onNext={goNext} onBack={goBack} />
-        )}
-        {currentStep === "register-device" && (
-          <RegisterDeviceStep
-            devices={devices ?? []}
-            registerDevice={registerDevice}
-            onNext={goNext}
-            onBack={goBack}
-          />
-        )}
-        {currentStep === "pair-sensor" && (
-          <PairSensorStep
-            plantBoxId={plantBoxId}
-            devices={devices ?? []}
-            updateBox={updateBox}
-            onNext={goNext}
-            onBack={goBack}
-          />
-        )}
-        {currentStep === "calibrate" && (
-          <CalibrateStep
-            plantBoxId={plantBoxId}
-            updateBox={updateBox}
-            onNext={goNext}
-            onBack={goBack}
-          />
-        )}
-        {currentStep === "confirm" && (
-          <ConfirmStep plantBoxId={plantBoxId} onBack={goBack} />
-        )}
-      </div>
+        {/* ─── Main Content ─── */}
+        <div className="flex-1 flex flex-col p-6 md:p-10">
+          {/* Header */}
+          <header className="flex justify-between items-start mb-8 border-b border-border/40 pb-6">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 mb-2">
+                <StepIcon className="w-5 h-5 text-botanical opacity-70" />
+                <span className="label-xs font-sans">
+                  Step {stepIndex + 1} of {STEPS.length}
+                </span>
+              </div>
+              <h3 className="text-2xl heading-botanical">
+                {STEPS[stepIndex].title}
+              </h3>
+              <p className="text-sm text-muted-italic max-w-lg">
+                {STEPS[stepIndex].description}
+              </p>
+            </div>
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-parchment-dark transition-colors rounded-full"
+              >
+                <X className="w-5 h-5 text-ink-faint" />
+              </button>
+            )}
+          </header>
+
+          {/* Step body */}
+          <main className="flex-1 overflow-y-auto pr-2">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentStep}
+                variants={stepVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                {currentStep === "intro" && <IntroStep onNext={goNext} />}
+                {currentStep === "flash-firmware" && (
+                  <FlashFirmwareStep onNext={goNext} onBack={goBack} />
+                )}
+                {currentStep === "assembly" && (
+                  <AssemblyStep onNext={goNext} onBack={goBack} />
+                )}
+                {currentStep === "connect-wifi" && (
+                  <ConnectWifiStep onNext={goNext} onBack={goBack} />
+                )}
+                {currentStep === "register-device" && (
+                  <RegisterDeviceStep
+                    devices={devices ?? []}
+                    registerDevice={registerDevice}
+                    onNext={goNext}
+                    onBack={goBack}
+                  />
+                )}
+                {currentStep === "pair-sensor" && (
+                  <PairSensorStep
+                    plantBoxId={plantBoxId}
+                    devices={devices ?? []}
+                    updateBox={updateBox}
+                    onNext={goNext}
+                    onBack={goBack}
+                  />
+                )}
+                {currentStep === "calibrate" && (
+                  <CalibrateStep
+                    plantBoxId={plantBoxId}
+                    updateBox={updateBox}
+                    onNext={goNext}
+                    onBack={goBack}
+                  />
+                )}
+                {currentStep === "confirm" && (
+                  <ConfirmStep plantBoxId={plantBoxId} onBack={goBack} />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </main>
+
+          {/* Footer */}
+          <footer className="mt-8 pt-4 border-t border-border/40 flex justify-between items-center opacity-40">
+            <span className="label-xs">
+              Station ID: {plantBoxId.substring(0, 8)}
+            </span>
+            <span className="text-[9px] italic text-ink-faint">
+              Plant People Monitor — fw v2.4
+            </span>
+          </footer>
+        </div>
+      </motion.div>
     </div>
   );
 }

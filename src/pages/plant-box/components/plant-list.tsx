@@ -1,21 +1,20 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { useMutation } from "convex/react";
-import { motion, AnimatePresence } from "framer-motion";
-import { api } from "../../../../convex/_generated/api";
-import { Doc, Id } from "../../../../convex/_generated/dataModel";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Plus,
-  Leaf,
-  Droplets,
-  Clock,
   AlertCircle,
   BookOpen,
-  X,
-  Loader2,
-  FlaskConical,
+  Clock,
+  Droplets,
   FileText,
+  FlaskConical,
+  Leaf,
+  Loader2,
+  X,
 } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { api } from "../../../../convex/_generated/api";
+import { Doc, Id } from "../../../../convex/_generated/dataModel";
 
 // ─── Journal Panel Styles (shared with add-plant-box-form) ───
 
@@ -593,17 +592,13 @@ function sortPlants(plants: Doc<"plants">[], key: SortKey) {
   const sorted = [...plants];
   switch (key) {
     case "date":
-      return sorted.sort(
-        (a, b) => (b.plantedDate ?? 0) - (a.plantedDate ?? 0),
-      );
+      return sorted.sort((a, b) => (b.plantedDate ?? 0) - (a.plantedDate ?? 0));
     case "genus":
       return sorted.sort((a, b) =>
         (a.species ?? a.name).localeCompare(b.species ?? b.name),
       );
     case "vitality":
-      return sorted.sort(
-        (a, b) => a.status.localeCompare(b.status),
-      );
+      return sorted.sort((a, b) => a.status.localeCompare(b.status));
   }
 }
 

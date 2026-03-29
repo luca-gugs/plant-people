@@ -50,18 +50,8 @@ export default function MoistureChart({ readings }: MoistureChartProps) {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
-                  <linearGradient
-                    id="moistureGrad"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="0%"
-                      stopColor="#3A4D39"
-                      stopOpacity={0.3}
-                    />
+                  <linearGradient id="moistureGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3A4D39" stopOpacity={0.3} />
                     <stop
                       offset="100%"
                       stopColor="#3A4D39"
@@ -89,7 +79,7 @@ export default function MoistureChart({ readings }: MoistureChartProps) {
                     fontSize: "10px",
                     fontFamily: "Georgia, serif",
                   }}
-                  formatter={(value: number) => [`${value}%`, "Moisture"]}
+                  formatter={(value) => [`${String(value)}%`, "Moisture"]}
                 />
                 <Area
                   type="monotone"
@@ -113,10 +103,7 @@ export default function MoistureChart({ readings }: MoistureChartProps) {
       {/* Current reading */}
       {latest && (
         <div className="mt-6 pt-4 border-t border-border text-center">
-          <span
-            className="text-2xl"
-            style={{ fontFamily: "Georgia, serif" }}
-          >
+          <span className="text-2xl" style={{ fontFamily: "Georgia, serif" }}>
             {latest.moisturePct}%
           </span>
           <span className="label-xs block mt-1">Current Moisture</span>
