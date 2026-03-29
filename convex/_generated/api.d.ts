@@ -10,9 +10,13 @@
 
 import type * as ResendOTP from "../ResendOTP.js";
 import type * as auth from "../auth.js";
+import type * as devices from "../devices.js";
 import type * as households from "../households.js";
 import type * as http from "../http.js";
 import type * as plantBoxes from "../plantBoxes.js";
+import type * as plants from "../plants.js";
+import type * as pumpEvents from "../pumpEvents.js";
+import type * as readings from "../readings.js";
 import type * as users from "../users.js";
 
 import type {
@@ -24,9 +28,13 @@ import type {
 declare const fullApi: ApiFromModules<{
   ResendOTP: typeof ResendOTP;
   auth: typeof auth;
+  devices: typeof devices;
   households: typeof households;
   http: typeof http;
   plantBoxes: typeof plantBoxes;
+  plants: typeof plants;
+  pumpEvents: typeof pumpEvents;
+  readings: typeof readings;
   users: typeof users;
 }>;
 

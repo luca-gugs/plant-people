@@ -1,26 +1,7 @@
+import { Link } from "react-router";
 import { motion } from "framer-motion";
-import { Leaf, Droplets, MapPin, AlertCircle } from "lucide-react";
-
-// ─── Light condition display labels & tag colors ───
-
-const LIGHT_CONFIG: Record<string, { label: string; bg: string; text: string }> =
-  {
-    full_sun: {
-      label: "Full Sun",
-      bg: "bg-[#4A6741]/90",
-      text: "text-white",
-    },
-    partial_shade: {
-      label: "Partial Shade",
-      bg: "bg-[#8B6340]/90",
-      text: "text-white",
-    },
-    deep_shade: {
-      label: "Deep Shade",
-      bg: "bg-[#507DBC]/90",
-      text: "text-white",
-    },
-  };
+import { Leaf, MapPin, AlertCircle } from "lucide-react";
+import { LIGHT_BY_VALUE } from "../../../constants/light-conditions";
 
 // ─── Component ───
 
@@ -39,13 +20,14 @@ interface PlantBoxCardProps {
 
 export default function PlantBoxCard({ box }: PlantBoxCardProps) {
   const lightConfig = box.lightCondition
-    ? LIGHT_CONFIG[box.lightCondition]
+    ? LIGHT_BY_VALUE[box.lightCondition as keyof typeof LIGHT_BY_VALUE]
     : null;
 
   const needsWater =
     box.latestMoisturePct !== null && box.latestMoisturePct < 50;
 
   return (
+    <Link to={`/plant-box/${box._id}`}>
     <motion.div
       className="card-specimen overflow-hidden p-0"
       whileHover={{ y: -2 }}
@@ -68,7 +50,7 @@ export default function PlantBoxCard({ box }: PlantBoxCardProps) {
         {/* Light condition tag */}
         {lightConfig && (
           <span
-            className={`absolute top-3 left-3 ${lightConfig.bg} ${lightConfig.text} backdrop-blur-sm px-2.5 py-1 text-[10px] uppercase tracking-wider font-sans`}
+            className={`absolute top-3 left-3 ${lightConfig.tagBg} ${lightConfig.tagText} backdrop-blur-sm px-2.5 py-1 text-[10px] uppercase tracking-wider font-sans`}
           >
             {lightConfig.label}
           </span>
@@ -150,5 +132,6 @@ export default function PlantBoxCard({ box }: PlantBoxCardProps) {
         </div>
       </div>
     </motion.div>
+    </Link>
   );
 }

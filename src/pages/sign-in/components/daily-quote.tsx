@@ -1,4 +1,4 @@
-import { gardenQuotes } from "../constants";
+import { gardenQuotes } from "../../../constants";
 
 const MS_PER_DAY = 86_400_000;
 const dayIndex =

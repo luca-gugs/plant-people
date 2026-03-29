@@ -62,6 +62,9 @@ export default defineSchema({
     wateringMode: v.optional(
       v.union(v.literal("auto"), v.literal("manual")),
     ),
+    // Calibration values (raw analog readings for 0% and 100% moisture)
+    sensorDryRaw: v.optional(v.number()),
+    sensorWetRaw: v.optional(v.number()),
   })
     .index("by_householdId", ["householdId"])
     .index("by_deviceId", ["deviceId"]),

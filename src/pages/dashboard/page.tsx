@@ -1,15 +1,13 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import { useHousehold } from "../contexts/household-context";
+import { api } from "../../../convex/_generated/api";
 import { motion } from "framer-motion";
 import { Plus, Search, Link2, Leaf, AlertCircle } from "lucide-react";
-import AddPlantBoxForm from "../components/add-plant-box-form";
-import PlantBoxCard from "../components/plant-box-card";
-import BotanicalFlower from "../components/botanical-flower";
+import AddPlantBoxForm from "./components/add-plant-box-form";
+import PlantBoxCard from "./components/plant-box-card";
+import BotanicalFlower from "./components/botanical-flower";
 
 export default function Dashboard() {
-  const household = useHousehold();
   const plantBoxes = useQuery(api.plantBoxes.list);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
