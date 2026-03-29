@@ -10,7 +10,7 @@ export default function Landing() {
     return <Navigate to="/dashboard" replace />;
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center text-center px-8 bg-parchment font-body selection:bg-selection">
+    <main className="min-h-[100dvh] flex flex-col items-center justify-center text-center px-8 bg-parchment font-body selection:bg-selection">
       <motion.div
         className="flex flex-col items-center"
         initial={{ opacity: 0 }}
@@ -85,12 +85,6 @@ export default function Landing() {
         </motion.div>
       </motion.div>
 
-      {/* Footer */}
-      <footer className="absolute bottom-6 text-center">
-        <p className="text-[9px] italic text-ink-faint tracking-wide">
-          made for madison with love by yrstrly
-        </p>
-      </footer>
     </main>
   );
 }
