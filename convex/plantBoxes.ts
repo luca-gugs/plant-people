@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireUser, batchDelete } from "./helpers";
 
 // ─── Get ───
 // Returns a single plant box by ID with enriched stats
@@ -20,6 +21,7 @@ export const get = query({
       .query("plants")
       .withIndex("by_plantBoxId", (q) => q.eq("plantBoxId", box._id))
       .take(200);
+    // Only count plants that are actively growing (harvested/removed are "done")
     const growingCount = plants.filter((p) => p.status === "growing").length;
 
     const latestReading = await ctx.db
@@ -74,10 +76,7 @@ export const update = mutation({
     sensorWetRaw: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) throw new Error("Not authenticated");
-    const user = await ctx.db.get("users", userId);
-    if (user === null) throw new Error("User not found");
+    const { user } = await requireUser(ctx);
 
     const box = await ctx.db.get("plantBoxes", args.plantBoxId);
     if (box === null) throw new Error("Plant box not found");
@@ -93,7 +92,6 @@ export const update = mutation({
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    // Auth gate
     const userId = await getAuthUserId(ctx);
     if (userId === null) return [];
     const user = await ctx.db.get("users", userId);
@@ -106,9 +104,10 @@ export const list = query({
       .take(50);
 
     // Enrich each box with growing-plant count and latest moisture %
+    // Note: list() returns minimal enrichment; use get() for full details including device name
     const enriched = await Promise.all(
       boxes.map(async (box) => {
-        // Count plants that are actively growing
+        // Only count plants that are actively growing (harvested/removed are "done")
         const plants = await ctx.db
           .query("plants")
           .withIndex("by_plantBoxId", (q) => q.eq("plantBoxId", box._id))
@@ -153,11 +152,8 @@ export const create = mutation({
     coverImageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Auth gate
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) throw new Error("Not authenticated");
-    const user = await ctx.db.get("users", userId);
-    if (user === null) throw new Error("User not found");
+    const { user } = await requireUser(ctx);
+
     if (user.householdId === undefined)
       throw new Error("Not part of a household");
 
@@ -176,76 +172,44 @@ export const create = mutation({
 });
 
 // ─── Remove ───
-// Deletes a plant box and cascades to plants, readings, and pump events
+// Deletes a plant box and cascades to plants, readings, and pump events.
+// WARNING: If new tables reference plants/readings/pumpEvents, add their
+// deletion here to avoid orphaned data.
 export const remove = mutation({
   args: { plantBoxId: v.id("plantBoxes") },
   handler: async (ctx, args) => {
-    // Auth gate
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) throw new Error("Not authenticated");
-    const user = await ctx.db.get("users", userId);
-    if (user === null) throw new Error("User not found");
+    const { user } = await requireUser(ctx);
 
-    // Ownership check
     const box = await ctx.db.get("plantBoxes", args.plantBoxId);
     if (box === null) throw new Error("Plant box not found");
     if (box.householdId !== user.householdId)
       throw new Error("Not authorized");
 
-    // Cascade-delete plants
-    let plants = await ctx.db
-      .query("plants")
-      .withIndex("by_plantBoxId", (q) => q.eq("plantBoxId", args.plantBoxId))
-      .take(256);
-    while (plants.length > 0) {
-      for (const plant of plants) {
-        await ctx.db.delete("plants", plant._id);
-      }
-      plants = await ctx.db
+    await batchDelete(ctx, () =>
+      ctx.db
         .query("plants")
         .withIndex("by_plantBoxId", (q) => q.eq("plantBoxId", args.plantBoxId))
-        .take(256);
-    }
+        .take(256),
+    );
 
-    // Cascade-delete readings
-    let readings = await ctx.db
-      .query("readings")
-      .withIndex("by_plantBoxId_and_timestamp", (q) =>
-        q.eq("plantBoxId", args.plantBoxId),
-      )
-      .take(256);
-    while (readings.length > 0) {
-      for (const reading of readings) {
-        await ctx.db.delete("readings", reading._id);
-      }
-      readings = await ctx.db
+    await batchDelete(ctx, () =>
+      ctx.db
         .query("readings")
         .withIndex("by_plantBoxId_and_timestamp", (q) =>
           q.eq("plantBoxId", args.plantBoxId),
         )
-        .take(256);
-    }
+        .take(256),
+    );
 
-    // Cascade-delete pump events
-    let events = await ctx.db
-      .query("pumpEvents")
-      .withIndex("by_plantBoxId_and_timestamp", (q) =>
-        q.eq("plantBoxId", args.plantBoxId),
-      )
-      .take(256);
-    while (events.length > 0) {
-      for (const event of events) {
-        await ctx.db.delete("pumpEvents", event._id);
-      }
-      events = await ctx.db
+    await batchDelete(ctx, () =>
+      ctx.db
         .query("pumpEvents")
         .withIndex("by_plantBoxId_and_timestamp", (q) =>
           q.eq("plantBoxId", args.plantBoxId),
         )
-        .take(256);
-    }
+        .take(256),
+    );
 
-    // Finally, delete the box itself
-    await ctx.db.delete("plantBoxes", args.plantBoxId);
+    await ctx.db.delete(args.plantBoxId);
   },
 });

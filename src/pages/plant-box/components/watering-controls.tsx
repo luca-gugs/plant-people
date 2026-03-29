@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Doc } from "../../../../convex/_generated/dataModel";
@@ -15,9 +16,14 @@ export default function WateringControls({ box }: WateringControlsProps) {
   const updateBox = useMutation(api.plantBoxes.update);
 
   const mode = box.wateringMode ?? "manual";
-  const thresholdLow = box.moistureThresholdLow ?? 30;
-  const thresholdHigh = box.moistureThresholdHigh ?? 70;
-  const maxDuration = box.maxPumpDurationMs ?? 5000;
+
+  // Local state for threshold/duration inputs — mutations fire on blur, not on
+  // every keystroke, to avoid a database write for each character typed.
+  const [low, setLow] = useState(box.moistureThresholdLow ?? 30);
+  const [high, setHigh] = useState(box.moistureThresholdHigh ?? 70);
+  const [duration, setDuration] = useState(
+    Math.round((box.maxPumpDurationMs ?? 5000) / 1000),
+  );
 
   function setMode(newMode: "auto" | "manual") {
     void updateBox({ plantBoxId: box._id, wateringMode: newMode });
@@ -51,12 +57,10 @@ export default function WateringControls({ box }: WateringControlsProps) {
           <span className="label-xs block mb-2">Low Threshold</span>
           <input
             type="number"
-            value={thresholdLow}
-            onChange={(e) =>
-              void updateBox({
-                plantBoxId: box._id,
-                moistureThresholdLow: Number(e.target.value),
-              })
+            value={low}
+            onChange={(e) => setLow(Number(e.target.value))}
+            onBlur={() =>
+              void updateBox({ plantBoxId: box._id, moistureThresholdLow: low })
             }
             min={0}
             max={100}
@@ -69,11 +73,12 @@ export default function WateringControls({ box }: WateringControlsProps) {
           <span className="label-xs block mb-2">High Threshold</span>
           <input
             type="number"
-            value={thresholdHigh}
-            onChange={(e) =>
+            value={high}
+            onChange={(e) => setHigh(Number(e.target.value))}
+            onBlur={() =>
               void updateBox({
                 plantBoxId: box._id,
-                moistureThresholdHigh: Number(e.target.value),
+                moistureThresholdHigh: high,
               })
             }
             min={0}
@@ -90,11 +95,12 @@ export default function WateringControls({ box }: WateringControlsProps) {
         <span className="label-xs block mb-2">Max Pump Duration</span>
         <input
           type="number"
-          value={maxDuration / 1000}
-          onChange={(e) =>
+          value={duration}
+          onChange={(e) => setDuration(Number(e.target.value))}
+          onBlur={() =>
             void updateBox({
               plantBoxId: box._id,
-              maxPumpDurationMs: Number(e.target.value) * 1000,
+              maxPumpDurationMs: duration * 1000,
             })
           }
           min={1}

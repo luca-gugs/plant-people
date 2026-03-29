@@ -50,6 +50,8 @@ Opens the app at [http://localhost:5173](http://localhost:5173) with the Convex 
 - **Forms:** always use [react-hook-form](https://react-hook-form.com/) for form state
 - **Backend:** all server logic lives in `convex/` — read `convex/_generated/ai/guidelines.md` before modifying Convex code
 - **Styling:** Tailwind CSS 4 utility classes only — no custom CSS files
+- **Shared styles:** journal drawer styles live in `src/components/journal-panel-styles.ts` — import from there rather than duplicating
+- **Design system reference:** a full component/token catalogue is available at `/components` in development
 
 ## Project Layout
 
