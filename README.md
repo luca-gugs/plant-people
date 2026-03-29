@@ -126,5 +126,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, conventions, and h
 
 ## License
 
-Apache 2.0 — see [LICENSE.txt](LICENSE.txt).
+[PolyForm Noncommercial 1.0.0](LICENSE.txt) — free for personal, educational, and non-commercial use. Commercial use is not permitted.
 Copyright 2024 The Gardening Society of San Rafael.
