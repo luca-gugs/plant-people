@@ -1,11 +1,12 @@
 import { createBrowserRouter } from "react-router";
 import AuthLayout from "./layouts/auth-layout";
 import HouseholdLayout from "./layouts/household-layout";
-import Landing from "./pages/landing";
-import SignIn from "./pages/sign-in";
-import HouseholdSetup from "./pages/household-setup";
-import Dashboard from "./pages/dashboard";
-import NotFound from "./pages/not-found";
+import Landing from "./pages/landing/page";
+import SignIn from "./pages/sign-in/page";
+import HouseholdSetup from "./pages/household-setup/page";
+import Dashboard from "./pages/dashboard/page";
+import PlantBoxPage from "./pages/plant-box/page";
+import NotFound from "./pages/not-found/page";
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
             element: <HouseholdLayout />,
             children: [
               { path: "/dashboard", element: <Dashboard /> },
+              { path: "/plant-box/:id", element: <PlantBoxPage /> },
             ],
           },
         ],

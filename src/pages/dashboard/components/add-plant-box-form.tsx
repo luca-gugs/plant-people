@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "../../../../convex/_generated/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Sun, FileText, Image, Leaf, Loader2, BookOpen } from "lucide-react";
+import { MapPin, Sun, FileText, Image, Leaf, Loader2, BookOpen, X } from "lucide-react";
 
 // ─── Types & Constants ───
 
-type LightCondition = "full_sun" | "partial_shade" | "deep_shade";
+import { LIGHT_OPTIONS, type LightCondition } from "../../../constants/light-conditions";
 
 interface FormValues {
   name: string;
@@ -17,28 +17,6 @@ interface FormValues {
   selectedCover: string;
   customCoverUrl: string;
 }
-
-const LIGHT_OPTIONS: {
-  value: LightCondition;
-  label: string;
-  description: string;
-}[] = [
-  {
-    value: "full_sun",
-    label: "Full Sun",
-    description: "Direct sunlight, 6+ hrs daily",
-  },
-  {
-    value: "partial_shade",
-    label: "Partial Shade",
-    description: "Filtered or morning light",
-  },
-  {
-    value: "deep_shade",
-    label: "Deep Shade",
-    description: "Low light, north-facing",
-  },
-];
 
 const COVER_SUGGESTIONS: { url: string; label: string }[] = [
   {
@@ -71,19 +49,11 @@ const COVER_SUGGESTIONS: { url: string; label: string }[] = [
 
 const panelStyle: React.CSSProperties = {
   background: `
-    radial-gradient(ellipse at 20% 10%, rgba(210,190,150,0.18) 0%, transparent 55%),
-    radial-gradient(ellipse at 85% 80%, rgba(180,160,120,0.13) 0%, transparent 50%),
-    radial-gradient(ellipse at 60% 45%, rgba(230,215,185,0.10) 0%, transparent 60%),
-    linear-gradient(160deg,
-      #F5EDD8 0%,
-      #F0E6C8 18%,
-      #EDE0BF 35%,
-      #F2E9CC 55%,
-      #EDE1C1 72%,
-      #F0E6C8 100%
-    )
+    radial-gradient(ellipse at 20% 10%, rgba(210,190,150,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 80%, rgba(180,160,120,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 45%, rgba(230,215,185,0.07) 0%, transparent 60%),
+    linear-gradient(162deg, #FEFAF0 0%, #F7F0E0 30%, #F1E9D5 65%, #EBE1C8 100%)
   `,
-  borderRadius: "40px 0 0 40px",
 };
 
 const deckleStyle: React.CSSProperties = {
@@ -218,14 +188,13 @@ export default function AddPlantBoxForm({
             animate={{ x: 0 }}
             exit={{ x: "105%" }}
             transition={{ type: "spring", damping: 28, stiffness: 220 }}
-            className="relative flex items-stretch h-full"
-            style={{ maxWidth: "580px", width: "100%" }}
+            className="relative flex items-stretch h-full w-full md:max-w-[580px]"
           >
-            {/* Leather close tab */}
+            {/* Leather close tab (desktop only) */}
             <button
               onClick={handleClose}
               aria-label="Close field journal"
-              className="flex-shrink-0 flex flex-col items-center justify-center gap-3 cursor-pointer hover:brightness-110 transition-all duration-200 focus:outline-none group"
+              className="hidden md:flex flex-shrink-0 flex-col items-center justify-center gap-3 cursor-pointer hover:brightness-110 transition-all duration-200 focus:outline-none group"
               style={{
                 ...leatherTabStyle,
                 width: "34px",
@@ -257,8 +226,8 @@ export default function AddPlantBoxForm({
               />
             </button>
 
-            {/* Deckle edge strip */}
-            <div className="flex-shrink-0 h-full" style={deckleStyle} />
+            {/* Deckle edge strip (desktop only) */}
+            <div className="hidden md:block flex-shrink-0 h-full" style={deckleStyle} />
 
             {/* Main journal panel */}
             <aside
@@ -285,6 +254,16 @@ export default function AddPlantBoxForm({
 
               {/* Journal Header */}
               <header className="relative z-10 px-8 pt-10 pb-7 border-b-2 border-dashed border-[#C4A96A]/40">
+                {/* Mobile close button */}
+                <button
+                  onClick={handleClose}
+                  aria-label="Close"
+                  className="md:hidden absolute top-4 right-4 p-2 cursor-pointer hover:opacity-70 transition-opacity"
+                  style={{ color: "#5C3D1E" }}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
                 {/* Decorative ruled header lines */}
                 <div className="mb-5">
                   <div
