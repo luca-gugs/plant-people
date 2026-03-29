@@ -19,115 +19,99 @@ export default function WateringControls({ box }: WateringControlsProps) {
   const thresholdHigh = box.moistureThresholdHigh ?? 70;
   const maxDuration = box.maxPumpDurationMs ?? 5000;
 
-  function toggleMode() {
-    void updateBox({
-      plantBoxId: box._id,
-      wateringMode: mode === "auto" ? "manual" : "auto",
-    });
+  function setMode(newMode: "auto" | "manual") {
+    void updateBox({ plantBoxId: box._id, wateringMode: newMode });
   }
 
   return (
-    <div>
-      <h2 className="text-xl font-light italic text-ink mb-4">
-        Watering Controls
+    <div className="panel-ornate">
+      <h2 className="text-sm uppercase tracking-widest text-botanical mb-6 text-center">
+        Irrigation Controls
       </h2>
 
-      <div className="border border-border/40 p-4 space-y-6">
-        {/* Mode toggle */}
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-sm text-ink block">Watering Mode</span>
-            <span className="text-xs text-muted-italic">
-              {mode === "auto"
-                ? "Pump activates automatically when moisture drops below threshold"
-                : "Pump only activates when you trigger it manually"}
-            </span>
-          </div>
-          <button
-            onClick={toggleMode}
-            className="text-sm px-4 py-1.5 border border-border"
-          >
-            {mode === "auto" ? "Auto" : "Manual"}
-          </button>
-        </div>
+      {/* Mode toggle */}
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        <button
+          onClick={() => setMode("auto")}
+          className={mode === "auto" ? "btn-primary" : "btn-secondary"}
+        >
+          Automatic
+        </button>
+        <button
+          onClick={() => setMode("manual")}
+          className={mode === "manual" ? "btn-primary" : "btn-secondary"}
+        >
+          Manual
+        </button>
+      </div>
 
-        {/* Thresholds (only meaningful in auto mode) */}
-        <div className="space-y-3">
-          <span className="text-sm text-ink block">Moisture Thresholds</span>
-          <div className="flex gap-6">
-            <label className="flex flex-col gap-1">
-              <span className="text-xs text-muted-italic">
-                Low (triggers pump)
-              </span>
-              <input
-                type="number"
-                value={thresholdLow}
-                onChange={(e) =>
-                  void updateBox({
-                    plantBoxId: box._id,
-                    moistureThresholdLow: Number(e.target.value),
-                  })
-                }
-                min={0}
-                max={100}
-                className="input-field w-20"
-              />
-            </label>
-            <label className="flex flex-col gap-1">
-              <span className="text-xs text-muted-italic">
-                High (stops pump)
-              </span>
-              <input
-                type="number"
-                value={thresholdHigh}
-                onChange={(e) =>
-                  void updateBox({
-                    plantBoxId: box._id,
-                    moistureThresholdHigh: Number(e.target.value),
-                  })
-                }
-                min={0}
-                max={100}
-                className="input-field w-20"
-              />
-            </label>
-          </div>
-        </div>
-
-        {/* Max pump duration */}
-        <label className="flex flex-col gap-1">
-          <span className="text-sm text-ink">Max Pump Duration</span>
-          <span className="text-xs text-muted-italic">
-            Safety limit — pump will stop after this many seconds regardless of
-            moisture level
-          </span>
+      {/* Thresholds */}
+      <div className="grid grid-cols-2 gap-8 text-center mb-8">
+        <div>
+          <span className="label-xs block mb-2">Low Threshold</span>
           <input
             type="number"
-            value={maxDuration / 1000}
+            value={thresholdLow}
             onChange={(e) =>
               void updateBox({
                 plantBoxId: box._id,
-                maxPumpDurationMs: Number(e.target.value) * 1000,
+                moistureThresholdLow: Number(e.target.value),
               })
             }
-            min={1}
-            max={60}
-            className="input-field w-20"
+            min={0}
+            max={100}
+            className="input-field text-center text-2xl w-full"
+            style={{ fontFamily: "Georgia, serif" }}
           />
-        </label>
-
-        {/* Manual trigger */}
+          <span className="label-xs block mt-1">Triggers pump</span>
+        </div>
         <div>
-          <button
-            disabled={box.deviceStatus !== "online"}
-            className="text-sm px-6 py-2 bg-ink text-parchment disabled:opacity-40"
-          >
-            {box.deviceStatus === "online"
-              ? "Water Now"
-              : "Device Offline"}
-          </button>
+          <span className="label-xs block mb-2">High Threshold</span>
+          <input
+            type="number"
+            value={thresholdHigh}
+            onChange={(e) =>
+              void updateBox({
+                plantBoxId: box._id,
+                moistureThresholdHigh: Number(e.target.value),
+              })
+            }
+            min={0}
+            max={100}
+            className="input-field text-center text-2xl w-full"
+            style={{ fontFamily: "Georgia, serif" }}
+          />
+          <span className="label-xs block mt-1">Stops pump</span>
         </div>
       </div>
+
+      {/* Max duration */}
+      <div className="text-center mb-8">
+        <span className="label-xs block mb-2">Max Pump Duration</span>
+        <input
+          type="number"
+          value={maxDuration / 1000}
+          onChange={(e) =>
+            void updateBox({
+              plantBoxId: box._id,
+              maxPumpDurationMs: Number(e.target.value) * 1000,
+            })
+          }
+          min={1}
+          max={60}
+          className="input-field text-center text-2xl w-24"
+          style={{ fontFamily: "Georgia, serif" }}
+        />
+        <span className="label-xs block mt-1">seconds</span>
+      </div>
+
+      {/* Manual trigger */}
+      <button
+        disabled={box.deviceStatus !== "online"}
+        className="btn-outline-botanical w-full"
+      >
+        {box.deviceStatus === "online" ? "Irrigate Now" : "Device Offline"}
+      </button>
     </div>
   );
 }

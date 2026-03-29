@@ -2,12 +2,6 @@ import { Link, Navigate } from "react-router";
 import { useConvexAuth } from "convex/react";
 import { motion } from "framer-motion";
 
-function BotanicalFlower() {
-  return (
-    <img src="/blue-hibiscus.png" alt="Blue Hibiscus" className="w-full h-full" />
-  );
-}
-
 export default function Landing() {
   const { isAuthenticated, isLoading } = useConvexAuth();
 
@@ -31,7 +25,11 @@ export default function Landing() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 2, ease: "easeOut" }}
         >
-          <BotanicalFlower />
+          <img
+            src="/blue-hibiscus.png"
+            alt="Blue Hibiscus"
+            className="w-full h-full object-contain"
+          />
         </motion.div>
 
         {/* Brand name */}
