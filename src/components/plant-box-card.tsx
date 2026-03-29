@@ -1,13 +1,26 @@
 import { motion } from "framer-motion";
-import { Leaf, Droplets } from "lucide-react";
+import { Leaf, Droplets, MapPin, AlertCircle } from "lucide-react";
 
-// ─── Light condition display labels ───
+// ─── Light condition display labels & tag colors ───
 
-const LIGHT_LABELS: Record<string, string> = {
-  full_sun: "Full Sun",
-  partial_shade: "Partial Shade",
-  deep_shade: "Deep Shade",
-};
+const LIGHT_CONFIG: Record<string, { label: string; bg: string; text: string }> =
+  {
+    full_sun: {
+      label: "Full Sun",
+      bg: "bg-[#4A6741]/90",
+      text: "text-white",
+    },
+    partial_shade: {
+      label: "Partial Shade",
+      bg: "bg-[#8B6340]/90",
+      text: "text-white",
+    },
+    deep_shade: {
+      label: "Deep Shade",
+      bg: "bg-[#507DBC]/90",
+      text: "text-white",
+    },
+  };
 
 // ─── Component ───
 
@@ -25,6 +38,13 @@ interface PlantBoxCardProps {
 }
 
 export default function PlantBoxCard({ box }: PlantBoxCardProps) {
+  const lightConfig = box.lightCondition
+    ? LIGHT_CONFIG[box.lightCondition]
+    : null;
+
+  const needsWater =
+    box.latestMoisturePct !== null && box.latestMoisturePct < 50;
+
   return (
     <motion.div
       className="card-specimen overflow-hidden p-0"
@@ -46,41 +66,86 @@ export default function PlantBoxCard({ box }: PlantBoxCardProps) {
         )}
 
         {/* Light condition tag */}
-        {box.lightCondition && (
-          <span className="tag-specimen absolute top-3 left-3">
-            {LIGHT_LABELS[box.lightCondition] ?? box.lightCondition}
+        {lightConfig && (
+          <span
+            className={`absolute top-3 left-3 ${lightConfig.bg} ${lightConfig.text} backdrop-blur-sm px-2.5 py-1 text-[10px] uppercase tracking-wider font-sans`}
+          >
+            {lightConfig.label}
+          </span>
+        )}
+
+        {/* Needs water badge */}
+        {needsWater && (
+          <span className="absolute bottom-3 right-3 bg-alert/90 text-white backdrop-blur-sm px-2.5 py-1 text-[10px] uppercase tracking-wider font-sans flex items-center gap-1.5">
+            <AlertCircle className="w-3 h-3" />
+            Need Water
           </span>
         )}
       </div>
 
       {/* Details */}
       <div className="p-5 space-y-3">
-        {/* Name & location */}
-        <div>
-          <h3 className="text-lg italic font-light text-botanical leading-snug">
-            {box.name}
-          </h3>
-          {box.location && (
-            <p className="label-sm mt-1">{box.location}</p>
-          )}
-        </div>
+        {/* Name */}
+        <h3
+          className="text-lg leading-snug"
+          style={{
+            fontFamily: "Georgia, serif",
+            fontWeight: 300,
+            fontStyle: "italic",
+            color: "#3A2C10",
+          }}
+        >
+          {box.name}
+        </h3>
+
+        {/* Location */}
+        {box.location && (
+          <p className="flex items-center gap-1.5 label-sm">
+            <MapPin className="w-3 h-3" />
+            {box.location}
+          </p>
+        )}
+
+        {/* Description */}
+        {box.description && (
+          <p
+            className="text-sm leading-relaxed"
+            style={{
+              fontFamily: "Georgia, serif",
+              fontStyle: "italic",
+              color: "#6B5E4C",
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {box.description}
+          </p>
+        )}
 
         {/* Stats row */}
-        <div className="flex items-center gap-4 pt-1 border-t border-border/40">
-          {/* Plant count */}
-          <span className="flex items-center gap-1.5 label-sm">
-            <Leaf className="w-3 h-3" />
-            <span>
-              {box.plantCount} {box.plantCount === 1 ? "plant" : "plants"}
+        <div className="flex items-center gap-6 pt-3 border-t border-border/40">
+          {/* Specimens */}
+          <div className="text-center">
+            <span className="block text-lg font-light text-ink">
+              {box.plantCount}
             </span>
-          </span>
+            <span className="label-sm" style={{ fontSize: "8px" }}>
+              Specimens
+            </span>
+          </div>
 
-          {/* Moisture */}
+          {/* Avg Moisture */}
           {box.latestMoisturePct !== null && (
-            <span className="flex items-center gap-1.5 label-sm">
-              <Droplets className="w-3 h-3" />
-              <span>{Math.round(box.latestMoisturePct)}%</span>
-            </span>
+            <div className="text-center">
+              <span className="block text-lg font-light text-ink">
+                {Math.round(box.latestMoisturePct)}%
+              </span>
+              <span className="label-sm" style={{ fontSize: "8px" }}>
+                Avg. Moisture
+              </span>
+            </div>
           )}
         </div>
       </div>
