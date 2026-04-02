@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Plant People",
+    "slug": "plant-people",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#FBF8F3"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.plantpeople.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FBF8F3"
+      },
+      "package": "com.plantpeople.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ],
+    "scheme": "plant-people",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
