@@ -13,6 +13,24 @@ interface ImageUploadGalleryProps {
   isUploading: boolean;
 }
 
+// Roman numeral helper (up to 20 plates is plenty)
+const ROMAN = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX"];
+
+const plateTagStyle: React.CSSProperties = {
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  right: 0,
+  fontSize: "7px",
+  color: "#3A2C10",
+  background: "rgba(240,228,200,0.88)",
+  padding: "2px 4px",
+  fontFamily: "sans-serif",
+  textTransform: "uppercase",
+  letterSpacing: "0.15em",
+  textAlign: "center",
+};
+
 export default function ImageUploadGallery({
   images,
   onFileSelected,
@@ -31,9 +49,10 @@ export default function ImageUploadGallery({
 
   return (
     <div className="space-y-3">
+      {/* Image grid with plate numbering */}
       {images.length > 0 && (
         <div className="grid grid-cols-3 gap-2">
-          {images.map((img) => (
+          {images.map((img, i) => (
             <div
               key={img._id}
               className="relative group overflow-hidden"
@@ -41,18 +60,21 @@ export default function ImageUploadGallery({
             >
               <img
                 src={img.url}
-                alt="Station photograph"
+                alt={`Plate ${ROMAN[i] ?? i + 1}`}
                 className="w-full h-full object-cover"
                 style={{ filter: "sepia(15%) grayscale(10%)" }}
               />
+              {/* Plate number caption */}
+              <div style={plateTagStyle}>Pl. {ROMAN[i] ?? i + 1}</div>
+              {/* Remove button */}
               <button
                 type="button"
                 onClick={() => onRemove(img._id)}
                 aria-label="Remove photograph"
                 className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
                 style={{
-                  width: "20px",
-                  height: "20px",
+                  width: "24px",
+                  height: "24px",
                   background: "rgba(60,30,10,0.75)",
                   borderRadius: "2px",
                 }}
@@ -64,27 +86,35 @@ export default function ImageUploadGallery({
         </div>
       )}
 
+      {/* Full-width tappable upload zone */}
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={isUploading}
-        className="flex items-center gap-2 font-sans uppercase tracking-widest transition-all duration-200 hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        className="w-full flex flex-col items-center justify-center gap-2 transition-all duration-200 hover:opacity-80 active:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         style={{
-          padding: "8px 14px",
-          fontSize: "9px",
-          letterSpacing: "0.2em",
-          color: "#6B5230",
+          padding: "20px 16px",
           border: "1.5px dashed rgba(160,120,60,0.5)",
           background: "transparent",
           borderRadius: "2px",
+          minHeight: "64px",
         }}
       >
         {isUploading ? (
-          <Loader2 className="w-3 h-3 animate-spin" />
+          <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#8B6340" }} />
         ) : (
-          <Camera className="w-3 h-3" />
+          <Camera className="w-6 h-6" style={{ color: "#8B6340" }} />
         )}
-        <span>{isUploading ? "Uploading..." : "Add Photograph"}</span>
+        <span
+          className="font-sans uppercase"
+          style={{
+            fontSize: "9px",
+            letterSpacing: "0.3em",
+            color: "#6B5230",
+          }}
+        >
+          {isUploading ? "Recording..." : "Log Photograph"}
+        </span>
       </button>
 
       <input
