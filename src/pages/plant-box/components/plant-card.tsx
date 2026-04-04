@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { AlertCircle, Clock, Droplets, Leaf } from "lucide-react";
-import { Doc, Id } from "../../../../convex/_generated/dataModel";
+import { Doc } from "../../../../convex/_generated/dataModel";
 
 interface PlantCardProps {
   plant: Doc<"plants">;

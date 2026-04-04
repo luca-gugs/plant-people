@@ -12,7 +12,6 @@ import {
   LogOut,
   ChevronRight,
   Loader2,
-  CheckCircle2,
   AlertCircle,
   Users,
 } from "lucide-react";
@@ -131,7 +130,7 @@ export default function HouseholdSetup() {
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               required
-              disabled={loading || success}
+              disabled={createSubmitting || joinSubmitting}
               className="w-full bg-transparent border-b border-border pb-2.5 text-sm italic text-ink caret-botanical placeholder:text-ink-faint/50 focus:outline-none focus:border-botanical transition-colors"
             />
             <p className="text-[10px] text-muted-italic">
