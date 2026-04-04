@@ -8,6 +8,7 @@ import HouseholdSetup from "./pages/household-setup/page";
 import Dashboard from "./pages/dashboard/page";
 import PlantBoxPage from "./pages/plant-box/page";
 import NotFound from "./pages/not-found/page";
+import Components from "./components/components";
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +34,8 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      // Design system reference — dev use only
+      { path: "/components", element: <Components /> },
       // Catch-all — unmatched paths show the 404 page
       { path: "*", element: <NotFound /> },
     ],

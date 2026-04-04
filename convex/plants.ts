@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireUser, batchDelete } from "./helpers";
 
 // ─── List ───
 // Returns all plants for a given plant box
@@ -33,10 +34,7 @@ export const create = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) throw new Error("Not authenticated");
-    const user = await ctx.db.get("users", userId);
-    if (user === null) throw new Error("User not found");
+    const { user } = await requireUser(ctx);
 
     const box = await ctx.db.get("plantBoxes", args.plantBoxId);
     if (box === null) throw new Error("Plant box not found");
@@ -69,10 +67,7 @@ export const update = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) throw new Error("Not authenticated");
-    const user = await ctx.db.get("users", userId);
-    if (user === null) throw new Error("User not found");
+    const { user } = await requireUser(ctx);
 
     const plant = await ctx.db.get("plants", args.plantId);
     if (plant === null) throw new Error("Plant not found");
@@ -90,10 +85,7 @@ export const update = mutation({
 export const remove = mutation({
   args: { plantId: v.id("plants") },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) throw new Error("Not authenticated");
-    const user = await ctx.db.get("users", userId);
-    if (user === null) throw new Error("User not found");
+    const { user } = await requireUser(ctx);
 
     const plant = await ctx.db.get("plants", args.plantId);
     if (plant === null) throw new Error("Plant not found");
@@ -102,21 +94,14 @@ export const remove = mutation({
     if (box === null || box.householdId !== user.householdId)
       throw new Error("Not authorized");
 
-    // Cascade-delete plant images
-    let plantImgs = await ctx.db
-      .query("plantImages")
-      .withIndex("by_plantId", (q) => q.eq("plantId", args.plantId))
-      .take(256);
-    while (plantImgs.length > 0) {
-      for (const img of plantImgs) {
-        await ctx.db.delete("plantImages", img._id);
-      }
-      plantImgs = await ctx.db
+    // Cascade-delete plant images before removing the plant
+    await batchDelete(ctx, () =>
+      ctx.db
         .query("plantImages")
         .withIndex("by_plantId", (q) => q.eq("plantId", args.plantId))
-        .take(256);
-    }
+        .take(256),
+    );
 
-    await ctx.db.delete("plants", args.plantId);
+    await ctx.db.delete(args.plantId);
   },
 });

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "convex/react";
+import { AnimatePresence, motion } from "framer-motion";
+import { BookOpen, FileText, FlaskConical, Leaf, Loader2, X } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
-import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Sun, FileText, Image, Leaf, Loader2, BookOpen, X } from "lucide-react";
+import { Id } from "../../../../convex/_generated/dataModel";
 import {
   panelStyle,
   deckleStyle,
@@ -12,81 +13,34 @@ import {
   inputStyle,
 } from "../../../components/journal-panel-styles";
 
-// ─── Types & Constants ───
-
-import { LIGHT_OPTIONS, type LightCondition } from "../../../constants/light-conditions";
-
 interface FormValues {
   name: string;
-  location: string;
-  description: string;
-  lightCondition: LightCondition;
-  selectedCover: string;
-  customCoverUrl: string;
+  species: string;
+  notes: string;
 }
 
-const COVER_SUGGESTIONS: { url: string; label: string }[] = [
-  {
-    url: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?q=80&w=900&auto=format&fit=crop",
-    label: "Herbs & Greens",
-  },
-  {
-    url: "https://images.unsplash.com/photo-1545241047-6083a3684587?q=80&w=900&auto=format&fit=crop",
-    label: "Tropical Shelf",
-  },
-  {
-    url: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=900&auto=format&fit=crop",
-    label: "Garden Blooms",
-  },
-  {
-    url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=900&auto=format&fit=crop",
-    label: "Low-Light Corner",
-  },
-  {
-    url: "https://images.unsplash.com/photo-1512428813834-c702c7702b78?q=80&w=900&auto=format&fit=crop",
-    label: "Ferns & Moss",
-  },
-  {
-    url: "https://images.unsplash.com/photo-1614594975525-e45190c55d0b?q=80&w=900&auto=format&fit=crop",
-    label: "Swiss Cheese",
-  },
-];
-
-// ─── Component ───
-
-interface AddPlantBoxFormProps {
+interface AddPlantFormProps {
   isOpen: boolean;
+  plantBoxId: Id<"plantBoxes">;
   onClose: () => void;
 }
 
-export default function AddPlantBoxForm({
+export default function AddPlantForm({
   isOpen,
+  plantBoxId,
   onClose,
-}: AddPlantBoxFormProps) {
-  const createPlantBox = useMutation(api.plantBoxes.create);
+}: AddPlantFormProps) {
+  const createPlant = useMutation(api.plants.create);
   const [submitError, setSubmitError] = useState("");
 
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    defaultValues: {
-      name: "",
-      location: "",
-      description: "",
-      lightCondition: "partial_shade",
-      selectedCover: COVER_SUGGESTIONS[0].url,
-      customCoverUrl: "",
-    },
+    defaultValues: { name: "", species: "", notes: "" },
   });
-
-  const lightCondition = watch("lightCondition");
-  const selectedCover = watch("selectedCover");
-  const customCoverUrl = watch("customCoverUrl");
 
   function handleClose() {
     reset();
@@ -97,13 +51,12 @@ export default function AddPlantBoxForm({
   async function onSubmit(data: FormValues) {
     setSubmitError("");
     try {
-      const coverUrl = data.customCoverUrl.trim() || data.selectedCover;
-      await createPlantBox({
+      await createPlant({
+        plantBoxId,
         name: data.name.trim(),
-        location: data.location.trim(),
-        description: data.description.trim() || undefined,
-        lightCondition: data.lightCondition,
-        coverImageUrl: coverUrl,
+        species: data.species.trim() || undefined,
+        plantedDate: Date.now(),
+        notes: data.notes.trim() || undefined,
       });
       handleClose();
     } catch {
@@ -130,9 +83,9 @@ export default function AddPlantBoxForm({
             animate={{ x: 0 }}
             exit={{ x: "105%" }}
             transition={{ type: "spring", damping: 28, stiffness: 220 }}
-            className="relative flex items-stretch h-full w-full md:max-w-[580px]"
+            className="relative flex items-stretch h-full w-full md:max-w-[520px]"
           >
-            {/* Leather close tab (desktop only) */}
+            {/* Leather close tab (desktop) */}
             <button
               onClick={handleClose}
               aria-label="Close field journal"
@@ -168,8 +121,11 @@ export default function AddPlantBoxForm({
               />
             </button>
 
-            {/* Deckle edge strip (desktop only) */}
-            <div className="hidden md:block flex-shrink-0 h-full" style={deckleStyle} />
+            {/* Deckle edge strip (desktop) */}
+            <div
+              className="hidden md:block flex-shrink-0 h-full"
+              style={deckleStyle}
+            />
 
             {/* Main journal panel */}
             <aside
@@ -235,7 +191,7 @@ export default function AddPlantBoxForm({
                         color: "#3A2C10",
                       }}
                     >
-                      Register a Planting Station
+                      Log a New Specimen
                     </h2>
                   </div>
                 </div>
@@ -249,8 +205,8 @@ export default function AddPlantBoxForm({
                     opacity: 0.8,
                   }}
                 >
-                  Each station is a distinct location or vessel in your care.
-                  Record its character faithfully below.
+                  Record each plant with care. Note its common name, species
+                  classification, and any observations for future reference.
                 </p>
 
                 {/* Entry date stamp */}
@@ -286,22 +242,22 @@ export default function AddPlantBoxForm({
                 onSubmit={(e) => void handleSubmit(onSubmit)(e)}
                 className="relative z-10 flex-1 px-8 py-8 space-y-10"
               >
-                {/* Station Name */}
+                {/* I. Plant Name */}
                 <div className="space-y-1">
                   <label
                     className="flex items-center gap-2 font-sans uppercase tracking-[0.3em]"
                     style={{ fontSize: "9px", color: "#5C3D1E" }}
                   >
                     <Leaf className="w-3 h-3" />
-                    <span>I. Station Name</span>
+                    <span>I. Common Name</span>
                   </label>
                   <div style={ruledLineStyle} className="pb-1">
                     <input
                       type="text"
                       {...register("name", {
-                        required: "Please give this station a name.",
+                        required: "Please name this specimen.",
                       })}
-                      placeholder="e.g. The Kitchen Windowsill"
+                      placeholder="e.g. Swiss Cheese Plant"
                       disabled={isSubmitting}
                       className="w-full bg-transparent focus:outline-none"
                       style={inputStyle}
@@ -321,58 +277,25 @@ export default function AddPlantBoxForm({
                   )}
                 </div>
 
-                {/* Location */}
+                {/* II. Species */}
                 <div className="space-y-1">
                   <label
                     className="flex items-center gap-2 font-sans uppercase tracking-[0.3em]"
                     style={{ fontSize: "9px", color: "#5C3D1E" }}
                   >
-                    <MapPin className="w-3 h-3" />
-                    <span>II. Location in the Home</span>
+                    <FlaskConical className="w-3 h-3" />
+                    <span>II. Species Classification</span>
                   </label>
                   <div style={ruledLineStyle} className="pb-1">
                     <input
                       type="text"
-                      {...register("location", {
-                        required: "Please note its location.",
-                      })}
-                      placeholder="e.g. Study, North-facing window"
+                      {...register("species")}
+                      placeholder="e.g. Monstera deliciosa"
                       disabled={isSubmitting}
                       className="w-full bg-transparent focus:outline-none"
                       style={inputStyle}
                     />
                   </div>
-                  {errors.location && (
-                    <p
-                      className="italic"
-                      style={{
-                        fontFamily: "Georgia, serif",
-                        fontSize: "10px",
-                        color: "#A63D40",
-                      }}
-                    >
-                      {errors.location.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Notes & Description */}
-                <div className="space-y-1">
-                  <label
-                    className="flex items-center gap-2 font-sans uppercase tracking-[0.3em]"
-                    style={{ fontSize: "9px", color: "#5C3D1E" }}
-                  >
-                    <FileText className="w-3 h-3" />
-                    <span>III. Field Notes &amp; Observations</span>
-                  </label>
-                  <textarea
-                    {...register("description")}
-                    rows={4}
-                    disabled={isSubmitting}
-                    placeholder="Describe the character of this collection..."
-                    className="w-full bg-transparent resize-none focus:outline-none"
-                    style={{ ...ruledLineStyle, ...inputStyle, fontSize: "14px" }}
-                  />
                 </div>
 
                 {/* Pencil-sketch divider */}
@@ -399,136 +322,22 @@ export default function AddPlantBoxForm({
                   />
                 </div>
 
-                {/* Light Conditions */}
-                <div className="space-y-3">
+                {/* III. Notes */}
+                <div className="space-y-1">
                   <label
                     className="flex items-center gap-2 font-sans uppercase tracking-[0.3em]"
                     style={{ fontSize: "9px", color: "#5C3D1E" }}
                   >
-                    <Sun className="w-3 h-3" />
-                    <span>IV. Light Conditions</span>
+                    <FileText className="w-3 h-3" />
+                    <span>III. Field Notes &amp; Observations</span>
                   </label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {LIGHT_OPTIONS.map((opt) => (
-                      <button
-                        type="button"
-                        key={opt.value}
-                        onClick={() => setValue("lightCondition", opt.value)}
-                        disabled={isSubmitting}
-                        className="text-left transition-all duration-200 cursor-pointer"
-                        style={{
-                          padding: "10px 12px",
-                          border: `1.5px solid ${
-                            lightCondition === opt.value
-                              ? "#5C3D1E"
-                              : "rgba(160,130,80,0.35)"
-                          }`,
-                          background:
-                            lightCondition === opt.value
-                              ? "rgba(92,61,30,0.07)"
-                              : "rgba(255,248,230,0.35)",
-                          borderRadius: "2px",
-                        }}
-                      >
-                        <span
-                          className="block italic mb-0.5"
-                          style={{
-                            fontFamily: "Georgia, serif",
-                            fontSize: "12px",
-                            color:
-                              lightCondition === opt.value
-                                ? "#3A2C10"
-                                : "#5C3D1E",
-                          }}
-                        >
-                          {opt.label}
-                        </span>
-                        <span
-                          className="block font-sans uppercase tracking-wider leading-tight"
-                          style={{ fontSize: "8px", color: "#8B6340" }}
-                        >
-                          {opt.description}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Cover Illustration */}
-                <div className="space-y-3">
-                  <label
-                    className="flex items-center gap-2 font-sans uppercase tracking-[0.3em]"
-                    style={{ fontSize: "9px", color: "#5C3D1E" }}
-                  >
-                    <Image className="w-3 h-3" />
-                    <span>V. Cover Illustration</span>
-                  </label>
-                  <p
-                    className="italic"
-                    style={{
-                      fontFamily: "Georgia, serif",
-                      fontSize: "11px",
-                      color: "#8B6340",
-                      opacity: 0.85,
-                    }}
-                  >
-                    Select from the archive engravings below, or paste a URL.
-                  </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {COVER_SUGGESTIONS.map((img) => (
-                      <button
-                        type="button"
-                        key={img.url}
-                        onClick={() => {
-                          setValue("selectedCover", img.url);
-                          setValue("customCoverUrl", "");
-                        }}
-                        disabled={isSubmitting}
-                        className="relative overflow-hidden transition-all duration-200 cursor-pointer"
-                        style={{
-                          aspectRatio: "4/3",
-                          border: `2px solid ${
-                            selectedCover === img.url &&
-                            !customCoverUrl.trim()
-                              ? "#5C3D1E"
-                              : "rgba(160,130,80,0.25)"
-                          }`,
-                          borderRadius: "2px",
-                        }}
-                      >
-                        <img
-                          src={img.url}
-                          alt={img.label}
-                          className="w-full h-full object-cover"
-                          style={{
-                            opacity: 0.75,
-                            filter: "sepia(40%) grayscale(20%)",
-                          }}
-                        />
-                        <span
-                          className="block font-sans uppercase tracking-wider text-center truncate px-1 py-0.5"
-                          style={{
-                            position: "absolute",
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            fontSize: "7px",
-                            color: "#3A2C10",
-                            background: "rgba(240,228,200,0.88)",
-                          }}
-                        >
-                          {img.label}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                  <input
-                    type="text"
-                    {...register("customCoverUrl")}
-                    placeholder="Or paste an image URL..."
+                  <textarea
+                    {...register("notes")}
+                    rows={4}
                     disabled={isSubmitting}
-                    className="w-full bg-transparent focus:outline-none"
-                    style={{ ...inputStyle, fontSize: "13px", lineHeight: "28px" }}
+                    placeholder="Care requirements, provenance, peculiarities..."
+                    className="w-full bg-transparent resize-none focus:outline-none"
+                    style={{ ...ruledLineStyle, ...inputStyle, fontSize: "14px" }}
                   />
                 </div>
 

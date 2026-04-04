@@ -8,13 +8,23 @@ export default function HouseholdLayout() {
   const household = useQuery(api.households.get);
 
   // Still loading user data
-  if (user === undefined) return <p>Loading...</p>;
+  if (user === undefined)
+    return (
+      <main className="min-h-screen bg-parchment flex items-center justify-center">
+        <p className="text-muted-italic text-sm">Loading...</p>
+      </main>
+    );
 
   // User has no household — redirect to setup
   if (!user?.householdId) return <Navigate to="/setup" replace />;
 
   // Still loading household data
-  if (household === undefined) return <p>Loading...</p>;
+  if (household === undefined)
+    return (
+      <main className="min-h-screen bg-parchment flex items-center justify-center">
+        <p className="text-muted-italic text-sm">Loading...</p>
+      </main>
+    );
 
   return (
     <HouseholdContext.Provider value={household}>

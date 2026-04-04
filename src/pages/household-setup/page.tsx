@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Navigate, useNavigate } from "react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useForm } from "react-hook-form";
 import { api } from "../../../convex/_generated/api";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -11,7 +12,6 @@ import {
   LogOut,
   ChevronRight,
   Loader2,
-  CheckCircle2,
   AlertCircle,
   Users,
 } from "lucide-react";
@@ -25,58 +25,53 @@ export default function HouseholdSetup() {
   const joinHousehold = useMutation(api.households.join);
 
   const [mode, setMode] = useState<Mode>("create");
+  // Nickname is shared across both tabs — kept as plain state rather than
+  // duplicated in each form since the input sits above the tab switcher.
   const [nickname, setNickname] = useState("");
-  const [name, setName] = useState("");
-  const [joinCode, setJoinCode] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+
+  const createForm = useForm<{ name: string }>({
+    defaultValues: { name: "" },
+  });
+  const joinForm = useForm<{ joinCode: string }>({
+    defaultValues: { joinCode: "" },
+  });
 
   function toggleMode(newMode: Mode) {
     setMode(newMode);
-    setError("");
-    setSuccess(false);
-    if (newMode === "create") setJoinCode("");
-    else setName("");
+    createForm.reset();
+    joinForm.reset();
   }
 
-  // Create a new household — on success, navigate to the dashboard
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  async function handleCreate(data: { name: string }) {
     try {
-      await createHousehold({ name, nickname });
-      setSuccess(true);
+      await createHousehold({ name: data.name, nickname });
       navigate("/dashboard");
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "Failed to create household",
-      );
-    } finally {
-      setLoading(false);
+      createForm.setError("root", {
+        message: err instanceof Error ? err.message : "Failed to create household",
+      });
     }
   }
 
-  // Join an existing household using a 6-character code
-  async function handleJoin(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  async function handleJoin(data: { joinCode: string }) {
     try {
-      await joinHousehold({ joinCode, nickname });
-      setSuccess(true);
+      await joinHousehold({ joinCode: data.joinCode, nickname });
       navigate("/dashboard");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Invalid join code");
-    } finally {
-      setLoading(false);
+      joinForm.setError("root", {
+        message: err instanceof Error ? err.message : "Invalid join code",
+      });
     }
   }
 
   // Already has a household — skip to dashboard
   if (user?.householdId) return <Navigate to="/dashboard" replace />;
+
+  const createError = createForm.formState.errors.root?.message;
+  const joinError = joinForm.formState.errors.root?.message;
+  const createSubmitting = createForm.formState.isSubmitting;
+  const joinSubmitting = joinForm.formState.isSubmitting;
 
   return (
     <main className="min-h-screen bg-parchment font-body text-ink flex items-center justify-center p-6 selection:bg-selection">
@@ -135,7 +130,7 @@ export default function HouseholdSetup() {
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               required
-              disabled={loading || success}
+              disabled={createSubmitting || joinSubmitting}
               className="w-full bg-transparent border-b border-border pb-2.5 text-sm italic text-ink caret-botanical placeholder:text-ink-faint/50 focus:outline-none focus:border-botanical transition-colors"
             />
             <p className="text-[10px] text-muted-italic">
@@ -190,7 +185,7 @@ export default function HouseholdSetup() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 8 }}
                 transition={{ duration: 0.25 }}
-                onSubmit={(e) => void handleCreate(e)}
+                onSubmit={(e) => void createForm.handleSubmit(handleCreate)(e)}
                 className="space-y-6"
               >
                 <div className="space-y-2">
@@ -204,10 +199,8 @@ export default function HouseholdSetup() {
                     id="household-name"
                     type="text"
                     placeholder="e.g. Baker Street Suite"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    disabled={loading || success}
+                    {...createForm.register("name", { required: true })}
+                    disabled={createSubmitting}
                     className="w-full bg-transparent border-b border-border pb-2.5 text-sm italic text-ink caret-botanical placeholder:text-ink-faint/50 focus:outline-none focus:border-botanical transition-colors"
                   />
                   <p className="text-[10px] text-muted-italic">
@@ -217,16 +210,11 @@ export default function HouseholdSetup() {
 
                 <button
                   type="submit"
-                  disabled={loading || !name || !nickname || success}
+                  disabled={createSubmitting || !createForm.watch("name") || !nickname}
                   className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                 >
-                  {loading ? (
+                  {createSubmitting ? (
                     <Loader2 className="w-4 h-4 animate-spin mx-auto" />
-                  ) : success ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Household Established</span>
-                    </span>
                   ) : (
                     <span className="flex items-center justify-center gap-2">
                       <span>Establish Household</span>
@@ -242,7 +230,7 @@ export default function HouseholdSetup() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -8 }}
                 transition={{ duration: 0.25 }}
-                onSubmit={(e) => void handleJoin(e)}
+                onSubmit={(e) => void joinForm.handleSubmit(handleJoin)(e)}
                 className="space-y-6"
               >
                 <div className="space-y-2">
@@ -255,10 +243,14 @@ export default function HouseholdSetup() {
                       type="text"
                       placeholder="ABCDEF"
                       maxLength={6}
-                      value={joinCode}
-                      onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                      required
-                      disabled={loading || success}
+                      {...joinForm.register("joinCode", {
+                        required: true,
+                        minLength: 6,
+                        onChange: (e) => {
+                          e.target.value = e.target.value.toUpperCase();
+                        },
+                      })}
+                      disabled={joinSubmitting}
                       className="w-full bg-transparent border-b border-border pb-2.5 text-center text-2xl font-mono tracking-[0.5em] text-ink caret-botanical placeholder:text-ink-faint/50 placeholder:tracking-normal focus:outline-none focus:border-botanical transition-colors"
                     />
                     <div className="absolute right-0 bottom-2.5">
@@ -272,16 +264,15 @@ export default function HouseholdSetup() {
 
                 <button
                   type="submit"
-                  disabled={loading || joinCode.length !== 6 || !nickname || success}
+                  disabled={
+                    joinSubmitting ||
+                    (joinForm.watch("joinCode") ?? "").length !== 6 ||
+                    !nickname
+                  }
                   className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                 >
-                  {loading ? (
+                  {joinSubmitting ? (
                     <Loader2 className="w-4 h-4 animate-spin mx-auto" />
-                  ) : success ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Household Entered</span>
-                    </span>
                   ) : (
                     <span className="flex items-center justify-center gap-2">
                       <span>Enter Household</span>
@@ -295,7 +286,7 @@ export default function HouseholdSetup() {
 
           {/* Error message */}
           <AnimatePresence>
-            {error && (
+            {(createError || joinError) && (
               <motion.div
                 initial={{ opacity: 0, height: 0, marginTop: 0 }}
                 animate={{ opacity: 1, height: "auto", marginTop: 20 }}
@@ -304,7 +295,7 @@ export default function HouseholdSetup() {
               >
                 <AlertCircle className="w-4 h-4 text-alert shrink-0 mt-0.5" />
                 <p className="text-xs italic text-alert leading-relaxed">
-                  {error}
+                  {createError ?? joinError}
                 </p>
               </motion.div>
             )}

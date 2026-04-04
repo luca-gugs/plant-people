@@ -1,31 +1,27 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireUser } from "./helpers";
 
 // Characters that are easy to read and share — no I/L/O/0/1 to avoid ambiguity
 const JOIN_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
-// Generate a random 6-character join code
+// 32 characters in the alphabet divides evenly into 256 (32 × 8 = 256),
+// so there is no modulo bias when mapping random bytes to the alphabet.
 function generateJoinCode(): string {
-  let code = "";
-  for (let i = 0; i < 6; i++) {
-    code +=
-      JOIN_CODE_ALPHABET[Math.floor(Math.random() * JOIN_CODE_ALPHABET.length)];
-  }
-  return code;
+  const bytes = new Uint8Array(6);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes)
+    .map((b) => JOIN_CODE_ALPHABET[b % JOIN_CODE_ALPHABET.length])
+    .join("");
 }
 
 // Create a new household and make the current user its owner
 export const create = mutation({
   args: { name: v.string(), nickname: v.string() },
   handler: async (ctx, args) => {
-    // Verify the user is authenticated
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) throw new Error("Not authenticated");
+    const { userId, user } = await requireUser(ctx);
 
-    // Ensure the user isn't already in a household
-    const user = await ctx.db.get("users", userId);
-    if (user === null) throw new Error("User not found");
     if (user.householdId !== undefined)
       throw new Error("Already in a household");
 
@@ -61,13 +57,8 @@ export const create = mutation({
 export const join = mutation({
   args: { joinCode: v.string(), nickname: v.string() },
   handler: async (ctx, args) => {
-    // Verify the user is authenticated
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) throw new Error("Not authenticated");
+    const { userId, user } = await requireUser(ctx);
 
-    // Ensure the user isn't already in a household
-    const user = await ctx.db.get("users", userId);
-    if (user === null) throw new Error("User not found");
     if (user.householdId !== undefined)
       throw new Error("Already in a household");
 

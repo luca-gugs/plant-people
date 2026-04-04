@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireUser } from "./helpers";
 
 // ─── List ───
 // Returns all devices for the user's household
@@ -29,10 +30,8 @@ export const register = mutation({
     deviceKey: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) throw new Error("Not authenticated");
-    const user = await ctx.db.get("users", userId);
-    if (user === null) throw new Error("User not found");
+    const { user } = await requireUser(ctx);
+
     if (user.householdId === undefined)
       throw new Error("Not part of a household");
 
@@ -56,16 +55,13 @@ export const register = mutation({
 export const remove = mutation({
   args: { deviceId: v.id("devices") },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) throw new Error("Not authenticated");
-    const user = await ctx.db.get("users", userId);
-    if (user === null) throw new Error("User not found");
+    const { user } = await requireUser(ctx);
 
     const device = await ctx.db.get("devices", args.deviceId);
     if (device === null) throw new Error("Device not found");
     if (device.householdId !== user.householdId)
       throw new Error("Not authorized");
 
-    await ctx.db.delete("devices", args.deviceId);
+    await ctx.db.delete(args.deviceId);
   },
 });

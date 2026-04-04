@@ -1,7 +1,9 @@
 {
-  "name": "plant-people",
-  "private": true,
-  "version": "0.0.0",
+  "name": "tend",
+  "private": false,
+  "version": "0.1.0",
+  "description": "Open-source smart plant monitoring and watering app using ESP32, Convex, and React",
+  "license": "PolyForm-NC-1.0.0",
   "type": "module",
   "scripts": {
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
