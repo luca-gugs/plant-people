@@ -57,7 +57,7 @@ export default function PlantBoxHeader({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
             <input
               type="text"
-              placeholder="Search flora specimens..."
+              placeholder="Search specimens..."
               className="input-search w-64"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}

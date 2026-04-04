@@ -85,7 +85,7 @@ export default function Dashboard() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search collections..."
+                placeholder="Search stations..."
                 className="input-search w-64"
               />
             </div>
@@ -94,7 +94,7 @@ export default function Dashboard() {
               className="btn-primary flex items-center gap-2 px-6"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Register New Box</span>
+              <span>Register New Station</span>
             </button>
           </div>
         </div>
@@ -122,7 +122,7 @@ export default function Dashboard() {
                 <strong className="text-base font-normal">
                   {stats.attention}
                 </strong>{" "}
-                Require Attention
+                Attention Required
               </span>
             )}
           </div>
@@ -155,7 +155,7 @@ export default function Dashboard() {
               <BotanicalFlower />
             </div>
             <h2 className="text-2xl heading-botanical mb-3">
-              Your garden awaits
+              Your Garden Awaits
             </h2>
             <p className="text-sm text-muted-italic max-w-xs mb-8">
               Register your first planting station to begin cataloguing your
@@ -165,7 +165,7 @@ export default function Dashboard() {
               onClick={() => setDrawerOpen(true)}
               className="btn-primary px-8"
             >
-              Add Your First Station
+              Register Your First Station
             </button>
           </motion.div>
         )}

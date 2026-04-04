@@ -49,7 +49,7 @@ export default function HouseholdSetup() {
       navigate("/dashboard");
     } catch (err: unknown) {
       createForm.setError("root", {
-        message: err instanceof Error ? err.message : "Failed to create household",
+        message: err instanceof Error ? err.message : "Failed to establish household.",
       });
     }
   }
@@ -60,7 +60,7 @@ export default function HouseholdSetup() {
       navigate("/dashboard");
     } catch (err: unknown) {
       joinForm.setError("root", {
-        message: err instanceof Error ? err.message : "Invalid join code",
+        message: err instanceof Error ? err.message : "Invalid join code.",
       });
     }
   }
