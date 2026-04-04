@@ -10,6 +10,7 @@
 
 import type * as ResendOTP from "../ResendOTP.js";
 import type * as auth from "../auth.js";
+import type * as deviceApi from "../deviceApi.js";
 import type * as devices from "../devices.js";
 import type * as households from "../households.js";
 import type * as http from "../http.js";
@@ -28,6 +29,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   ResendOTP: typeof ResendOTP;
   auth: typeof auth;
+  deviceApi: typeof deviceApi;
   devices: typeof devices;
   households: typeof households;
   http: typeof http;

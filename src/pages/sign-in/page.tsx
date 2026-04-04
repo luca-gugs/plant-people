@@ -4,7 +4,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth } from "convex/react";
 import { Navigate } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import DailyQuote from "./components/daily-quote";
+import DailyQuote from "../../components/daily-quote";
 
 type EmailForm = { email: string };
 type CodeForm = { code: string };

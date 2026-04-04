@@ -9,8 +9,12 @@ import {
   Search,
   ChevronRight,
   LogOut,
+  Crown,
+  User,
 } from "lucide-react";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 const TABS = [
   { id: "ledger", label: "The Ledger", icon: Book, roman: "I" },
