@@ -192,13 +192,42 @@ export const remove = mutation({
     if (box.householdId !== user.householdId)
       throw new Error("Not authorized");
 
-    // Cascade-delete plants
+    // Cascade-delete plant box images
+    let boxImages = await ctx.db
+      .query("plantBoxImages")
+      .withIndex("by_plantBoxId", (q) => q.eq("plantBoxId", args.plantBoxId))
+      .take(256);
+    while (boxImages.length > 0) {
+      for (const img of boxImages) {
+        await ctx.db.delete("plantBoxImages", img._id);
+      }
+      boxImages = await ctx.db
+        .query("plantBoxImages")
+        .withIndex("by_plantBoxId", (q) => q.eq("plantBoxId", args.plantBoxId))
+        .take(256);
+    }
+
+    // Cascade-delete plants (and their images)
     let plants = await ctx.db
       .query("plants")
       .withIndex("by_plantBoxId", (q) => q.eq("plantBoxId", args.plantBoxId))
       .take(256);
     while (plants.length > 0) {
       for (const plant of plants) {
+        // Delete plant images
+        let plantImgs = await ctx.db
+          .query("plantImages")
+          .withIndex("by_plantId", (q) => q.eq("plantId", plant._id))
+          .take(256);
+        while (plantImgs.length > 0) {
+          for (const img of plantImgs) {
+            await ctx.db.delete("plantImages", img._id);
+          }
+          plantImgs = await ctx.db
+            .query("plantImages")
+            .withIndex("by_plantId", (q) => q.eq("plantId", plant._id))
+            .take(256);
+        }
         await ctx.db.delete("plants", plant._id);
       }
       plants = await ctx.db

@@ -114,4 +114,16 @@ export default defineSchema({
     ),
     createdAt: v.number(),
   }).index("by_plantBoxId_and_status", ["plantBoxId", "status"]),
+
+  plantBoxImages: defineTable({
+    plantBoxId: v.id("plantBoxes"),
+    storageId: v.id("_storage"),
+    uploadedAt: v.number(),
+  }).index("by_plantBoxId", ["plantBoxId"]),
+
+  plantImages: defineTable({
+    plantId: v.id("plants"),
+    storageId: v.id("_storage"),
+    uploadedAt: v.number(),
+  }).index("by_plantId", ["plantId"]),
 });

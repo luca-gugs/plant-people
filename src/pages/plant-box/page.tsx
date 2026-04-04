@@ -12,6 +12,7 @@ import MoistureChart from "./components/moisture-chart";
 import WateringHistory from "./components/watering-history";
 import WateringControls from "./components/watering-controls";
 import PlantDetailModal from "./components/plant-detail-modal";
+import PlantBoxImages from "./components/plant-box-images";
 import { LIGHT_BY_VALUE } from "../../constants/light-conditions";
 
 export default function PlantBoxPage() {
@@ -199,6 +200,16 @@ export default function PlantBoxPage() {
                   </div>
                 )}
               </div>
+            </motion.div>
+
+
+            {/* Station photographs */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              <PlantBoxImages plantBoxId={plantBoxId} />
             </motion.div>
           </aside>
         </div>
