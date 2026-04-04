@@ -17,7 +17,7 @@ function generateJoinCode(): string {
 
 // Create a new household and make the current user its owner
 export const create = mutation({
-  args: { name: v.string() },
+  args: { name: v.string(), nickname: v.string() },
   handler: async (ctx, args) => {
     // Verify the user is authenticated
     const userId = await getAuthUserId(ctx);
@@ -47,7 +47,11 @@ export const create = mutation({
     });
 
     // Link the user to the household as owner
-    await ctx.db.patch("users", userId, { householdId, role: "owner" });
+    await ctx.db.patch("users", userId, {
+      householdId,
+      role: "owner",
+      nickname: args.nickname,
+    });
 
     return householdId;
   },
@@ -55,7 +59,7 @@ export const create = mutation({
 
 // Join an existing household using a 6-character code
 export const join = mutation({
-  args: { joinCode: v.string() },
+  args: { joinCode: v.string(), nickname: v.string() },
   handler: async (ctx, args) => {
     // Verify the user is authenticated
     const userId = await getAuthUserId(ctx);
@@ -81,9 +85,33 @@ export const join = mutation({
     await ctx.db.patch("users", userId, {
       householdId: household._id,
       role: "member",
+      nickname: args.nickname,
     });
 
     return household._id;
+  },
+});
+
+// List all members of the current user's household
+export const members = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) return [];
+
+    const user = await ctx.db.get("users", userId);
+    if (user === null || user.householdId === undefined) return [];
+
+    const users = await ctx.db
+      .query("users")
+      .withIndex("by_householdId", (q) => q.eq("householdId", user.householdId!))
+      .collect();
+
+    return users.map((u) => ({
+      _id: u._id,
+      nickname: u.nickname ?? "Unknown",
+      role: u.role ?? "member",
+    }));
   },
 });
 

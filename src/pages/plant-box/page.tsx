@@ -23,8 +23,9 @@ export default function PlantBoxPage() {
   const readings = useQuery(api.readings.list, { plantBoxId });
   const pumpEvents = useQuery(api.pumpEvents.list, { plantBoxId });
 
-  const [selectedPlantId, setSelectedPlantId] =
-    useState<Id<"plants"> | null>(null);
+  const [selectedPlantId, setSelectedPlantId] = useState<Id<"plants"> | null>(
+    null,
+  );
   const selectedPlant =
     (plants ?? []).find((p) => p._id === selectedPlantId) ?? null;
 
@@ -188,18 +189,10 @@ export default function PlantBoxPage() {
                     <span className="label-xs">Device</span>
                   </div>
                 ) : (
-                  <div>
-                    <WifiOff className="w-6 h-6 text-ink-faint mx-auto mb-2 opacity-80" />
-                    <p
-                      className="text-2xl"
-                      style={{ fontFamily: "Georgia, serif" }}
-                    >
-                      None
-                    </p>
-                    <span className="label-xs">Device</span>
+                  <div className="col-span-2 w-full">
                     <button
                       onClick={() => setShowDeviceSetup(true)}
-                      className="btn-outline-botanical mt-3 text-[10px]"
+                      className="btn-outline-botanical w-full text-[10px]"
                     >
                       Set Up Device
                     </button>
@@ -207,15 +200,6 @@ export default function PlantBoxPage() {
                 )}
               </div>
             </motion.div>
-
-            {/* Decorative element */}
-            <div className="opacity-30 flex flex-col items-center justify-center p-4">
-              <div className="w-12 h-px bg-botanical mb-4" />
-              <p className="text-[10px] uppercase tracking-[0.5em] text-center">
-                In Omnibus Glorificetur Deus
-              </p>
-              <div className="w-12 h-px bg-botanical mt-4" />
-            </div>
           </aside>
         </div>
       </div>
@@ -235,14 +219,6 @@ export default function PlantBoxPage() {
           onClose={() => setShowDeviceSetup(false)}
         />
       )}
-
-      {/* Footer */}
-      <footer className="mt-20 py-12 border-t border-border/60 text-center">
-        <p className="label-xs mb-2">Meticulously cataloged and curated</p>
-        <p className="text-xs italic text-ink-muted">
-          Est. MMXXIII — A Private Botanical Collection
-        </p>
-      </footer>
     </div>
   );
 }

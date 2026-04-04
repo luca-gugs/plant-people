@@ -20,6 +20,7 @@ export default defineSchema({
     phoneVerificationTime: v.optional(v.number()),
     isAnonymous: v.optional(v.boolean()),
     // App fields
+    nickname: v.optional(v.string()),
     householdId: v.optional(v.id("households")),
     role: v.optional(v.union(v.literal("owner"), v.literal("member"))),
   })
@@ -97,4 +98,20 @@ export default defineSchema({
     moistureAfter: v.optional(v.number()),
     timestamp: v.number(),
   }).index("by_plantBoxId_and_timestamp", ["plantBoxId", "timestamp"]),
+
+  // Command queue: app → device communication
+  // When a user triggers an action (e.g. "Water Now"), a pending command is
+  // inserted here. The ESP32's next heartbeat picks it up and executes it.
+  commands: defineTable({
+    plantBoxId: v.id("plantBoxes"),
+    type: v.literal("pump"),
+    pumpChannel: v.number(),
+    durationMs: v.number(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("sent"),
+      v.literal("executed"),
+    ),
+    createdAt: v.number(),
+  }).index("by_plantBoxId_and_status", ["plantBoxId", "status"]),
 });
