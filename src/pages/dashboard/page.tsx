@@ -6,8 +6,11 @@ import { Plus, Search, Link2, Leaf, AlertCircle } from "lucide-react";
 import AddPlantBoxForm from "./components/add-plant-box-form";
 import PlantBoxCard from "./components/plant-box-card";
 import BotanicalFlower from "./components/botanical-flower";
+import DailyQuote from "../../components/daily-quote";
+import { useHousehold } from "../../contexts/household-context";
 
 export default function Dashboard() {
+  const household = useHousehold();
   const plantBoxes = useQuery(api.plantBoxes.list);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,7 +24,7 @@ export default function Dashboard() {
     const stations = plantBoxes.length;
     const specimens = plantBoxes.reduce((sum, b) => sum + b.plantCount, 0);
     const attention = plantBoxes.filter(
-      (b) => b.latestMoisturePct !== null && b.latestMoisturePct < 50
+      (b) => b.latestMoisturePct !== null && b.latestMoisturePct < 50,
     ).length;
     return { stations, specimens, attention };
   }, [plantBoxes]);
@@ -35,7 +38,7 @@ export default function Dashboard() {
       (b) =>
         b.name.toLowerCase().includes(q) ||
         (b.location && b.location.toLowerCase().includes(q)) ||
-        (b.description && b.description.toLowerCase().includes(q))
+        (b.description && b.description.toLowerCase().includes(q)),
     );
   }, [plantBoxes, searchQuery]);
 
@@ -54,9 +57,7 @@ export default function Dashboard() {
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
           {/* Left: Title area */}
           <div>
-            <span className="label-wide block mb-4">
-              Herbarium Personal Archive
-            </span>
+            <span className="label-wide block mb-4">Welcome to</span>
             <h1
               className="leading-snug mb-4"
               style={{
@@ -67,12 +68,13 @@ export default function Dashboard() {
                 color: "#3A2C10",
               }}
             >
-              The Botanical Ledger
+              {household.name}
             </h1>
-            <p className="text-sm text-muted-italic opacity-70 max-w-md">
+            <DailyQuote align="left" />
+            {/* <p className="text-sm text-muted-italic opacity-70 max-w-md">
               A personal register of all planting stations, boxes &amp;
               arrangements under care.
-            </p>
+            </p> */}
           </div>
 
           {/* Right: Search + Register button */}

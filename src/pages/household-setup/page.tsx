@@ -26,6 +26,9 @@ export default function HouseholdSetup() {
   const joinHousehold = useMutation(api.households.join);
 
   const [mode, setMode] = useState<Mode>("create");
+  // Nickname is shared across both tabs — kept as plain state rather than
+  // duplicated in each form since the input sits above the tab switcher.
+  const [nickname, setNickname] = useState("");
   const navigate = useNavigate();
 
   const createForm = useForm<{ name: string }>({
@@ -43,7 +46,7 @@ export default function HouseholdSetup() {
 
   async function handleCreate(data: { name: string }) {
     try {
-      await createHousehold({ name: data.name });
+      await createHousehold({ name: data.name, nickname });
       navigate("/dashboard");
     } catch (err: unknown) {
       createForm.setError("root", {
@@ -54,7 +57,7 @@ export default function HouseholdSetup() {
 
   async function handleJoin(data: { joinCode: string }) {
     try {
-      await joinHousehold({ joinCode: data.joinCode });
+      await joinHousehold({ joinCode: data.joinCode, nickname });
       navigate("/dashboard");
     } catch (err: unknown) {
       joinForm.setError("root", {
@@ -116,6 +119,26 @@ export default function HouseholdSetup() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, delay: 0.1, ease: "easeOut" }}
         >
+          {/* Nickname — required for both flows */}
+          <div className="space-y-2 mb-8">
+            <label htmlFor="nickname" className="label-xs block mb-2">
+              Your Nickname
+            </label>
+            <input
+              id="nickname"
+              type="text"
+              placeholder="e.g. Fern"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              required
+              disabled={loading || success}
+              className="w-full bg-transparent border-b border-border pb-2.5 text-sm italic text-ink caret-botanical placeholder:text-ink-faint/50 focus:outline-none focus:border-botanical transition-colors"
+            />
+            <p className="text-[10px] text-muted-italic">
+              How your household will know you.
+            </p>
+          </div>
+
           {/* Tab switcher */}
           <div className="flex border-b border-border mb-8">
             <button
@@ -188,7 +211,7 @@ export default function HouseholdSetup() {
 
                 <button
                   type="submit"
-                  disabled={createSubmitting || !createForm.watch("name")}
+                  disabled={createSubmitting || !createForm.watch("name") || !nickname}
                   className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                 >
                   {createSubmitting ? (
@@ -244,7 +267,8 @@ export default function HouseholdSetup() {
                   type="submit"
                   disabled={
                     joinSubmitting ||
-                    (joinForm.watch("joinCode") ?? "").length !== 6
+                    (joinForm.watch("joinCode") ?? "").length !== 6 ||
+                    !nickname
                   }
                   className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                 >

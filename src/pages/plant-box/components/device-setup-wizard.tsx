@@ -95,23 +95,27 @@ function isChromiumBrowser(): boolean {
 // ─── Animation variants ───
 
 const mapVariants: Variants = {
-  hidden: { scaleX: 0, opacity: 0 },
+  hidden: { scaleX: 0, opacity: 0, transformOrigin: "center" },
   visible: {
     scaleX: 1,
     opacity: 1,
-    transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
+    transition: {
+      duration: 0.8,
+      ease: [0.4, 0, 0.2, 1],
+      when: "beforeChildren",
+      staggerChildren: 0.1,
+    },
   },
   exit: {
     scaleX: 0,
     opacity: 0,
-    transition: { duration: 0.3, ease: "easeInOut" },
+    transition: { duration: 0.5, ease: "easeInOut" },
   },
 };
 
-const stepVariants: Variants = {
+const contentVariants: Variants = {
   hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-  exit: { opacity: 0, y: -10, transition: { duration: 0.15 } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
 // ─── Component ───
@@ -155,7 +159,7 @@ export default function DeviceSetupWizard({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 font-body">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 font-serif">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -171,21 +175,21 @@ export default function DeviceSetupWizard({
         initial="hidden"
         animate="visible"
         exit="exit"
-        className="relative modal-content w-full max-w-4xl flex flex-col md:flex-row min-h-[600px]"
+        className="relative w-full max-w-4xl bg-parchment border-[6px] border-double border-border shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[600px]"
       >
         {/* ─── Side Panel ─── */}
-        <div className="hidden md:flex w-1/3 bg-parchment-dark border-r border-border/60 flex-col items-center justify-center p-8">
-          <div className="text-center space-y-6">
+        <div className="hidden md:flex w-1/3 bg-parchment-dark border-r border-border/60 flex-col items-center justify-center p-8 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-5 pointer-events-none" />
+          <div className="relative z-10 text-center space-y-6">
             <div className="divider-botanical mx-auto opacity-40" />
             <div>
-              <span className="label-xs block mb-2">Installation Protocol</span>
-              <h2 className="text-3xl heading-botanical leading-tight">
+              <span className="text-[10px] uppercase tracking-[0.4em] text-ink-faint block mb-2">
+                Installation Protocol
+              </span>
+              <h2 className="text-3xl font-light italic text-botanical leading-tight">
                 Device Setup
               </h2>
             </div>
-            <p className="text-xs text-muted-italic px-4">
-              "Continuous substrate monitoring for informed irrigation decisions."
-            </p>
             <div className="divider-botanical mx-auto opacity-40" />
 
             {/* Progress visualization */}
@@ -224,42 +228,39 @@ export default function DeviceSetupWizard({
         </div>
 
         {/* ─── Main Content ─── */}
-        <div className="flex-1 flex flex-col p-6 md:p-10">
+        <div className="flex-1 flex flex-col p-6 md:p-12">
           {/* Header */}
-          <header className="flex justify-between items-start mb-8 border-b border-border/40 pb-6">
+          <header className="flex justify-between items-start mb-10 border-b border-border/40 pb-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2 mb-2">
                 <StepIcon className="w-5 h-5 text-botanical opacity-70" />
-                <span className="label-xs font-sans">
+                <span className="text-[10px] uppercase tracking-[0.3em] text-ink-faint font-sans">
                   Step {stepIndex + 1} of {STEPS.length}
                 </span>
               </div>
-              <h3 className="text-2xl heading-botanical">
+              <h3 className="text-3xl italic font-medium text-botanical">
                 {STEPS[stepIndex].title}
               </h3>
-              <p className="text-sm text-muted-italic max-w-lg">
+              <p className="text-sm text-muted-italic opacity-80 max-w-lg">
                 {STEPS[stepIndex].description}
               </p>
             </div>
-            {onClose && (
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-parchment-dark transition-colors rounded-full"
-              >
-                <X className="w-5 h-5 text-ink-faint" />
-              </button>
-            )}
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-parchment-dark transition-colors rounded-full"
+            >
+              <X className="w-5 h-5 text-ink-faint" />
+            </button>
           </header>
 
           {/* Step body */}
-          <main className="flex-1 overflow-y-auto pr-2">
+          <main className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentStep}
-                variants={stepVariants}
+                variants={contentVariants}
                 initial="hidden"
                 animate="visible"
-                exit="exit"
               >
                 {currentStep === "intro" && <IntroStep onNext={goNext} />}
                 {currentStep === "flash-firmware" && (
@@ -308,12 +309,27 @@ export default function DeviceSetupWizard({
             <span className="label-xs">
               Station ID: {plantBoxId.substring(0, 8)}
             </span>
-            <span className="text-[9px] italic text-ink-faint">
-              Plant People Monitor — fw v2.4
-            </span>
           </footer>
         </div>
       </motion.div>
+
+      {/* Custom scrollbar styling */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #D4CBB7;
+            border-radius: 10px;
+          }
+        `,
+        }}
+      />
     </div>
   );
 }
@@ -421,23 +437,17 @@ function FlashFirmwareStep({
 
       {/* Flash instructions */}
       <ol className="space-y-3 text-sm text-muted-italic list-decimal list-inside">
+        <li>Plug your ESP32 into your computer using a USB cable.</li>
         <li>
-          Plug your ESP32 into your computer using a USB cable.
-        </li>
-        <li>
-          Click the <strong className="text-ink font-normal">"Install Firmware"</strong>{" "}
+          Click the{" "}
+          <strong className="text-ink font-normal">"Install Firmware"</strong>{" "}
           button below.
         </li>
         <li>
           Your browser will ask you to select a serial port — pick the one that
           appeared when you plugged in the device (usually something like{" "}
-          <code className="text-ink bg-border/30 px-1">
-            CP2102 USB to UART
-          </code>{" "}
-          or{" "}
-          <code className="text-ink bg-border/30 px-1">
-            USB Serial
-          </code>
+          <code className="text-ink bg-border/30 px-1">CP2102 USB to UART</code>{" "}
+          or <code className="text-ink bg-border/30 px-1">USB Serial</code>
           ).
         </li>
         <li>
@@ -512,9 +522,8 @@ function ConnectWifiStep({
         <li>
           The device's screen (or serial monitor) will show a{" "}
           <strong className="text-ink font-normal">Device Key</strong> — a short
-          code like{" "}
-          <code className="text-ink bg-border/30 px-1">PP-A3F8</code>. Write
-          it down for the next step.
+          code like <code className="text-ink bg-border/30 px-1">PP-A3F8</code>.
+          Write it down for the next step.
         </li>
       </ol>
 
@@ -1110,8 +1119,8 @@ function ConfirmStep({ plantBoxId, onBack }: ConfirmStepProps) {
         <p className="text-sm text-ink font-medium">2. Test the Pump</p>
         <p className="text-sm text-muted-italic">
           Make sure the tubing is in your water reservoir and the outlet is
-          pointed at the plant box (or into a cup for testing). This will run the
-          pump for 2 seconds.
+          pointed at the plant box (or into a cup for testing). This will run
+          the pump for 2 seconds.
         </p>
         <div className="flex items-center gap-3 pt-2">
           {testState === "idle" && (
@@ -1123,9 +1132,7 @@ function ConfirmStep({ plantBoxId, onBack }: ConfirmStepProps) {
             </button>
           )}
           {testState === "pumping" && (
-            <span className="text-sm text-muted-italic italic">
-              Pumping...
-            </span>
+            <span className="text-sm text-muted-italic italic">Pumping...</span>
           )}
           {testState === "done" && (
             <div className="flex items-center gap-2">

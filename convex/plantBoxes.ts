@@ -185,12 +185,34 @@ export const remove = mutation({
     if (box.householdId !== user.householdId)
       throw new Error("Not authorized");
 
+    // Cascade-delete plant box images
     await batchDelete(ctx, () =>
       ctx.db
-        .query("plants")
+        .query("plantBoxImages")
         .withIndex("by_plantBoxId", (q) => q.eq("plantBoxId", args.plantBoxId))
         .take(256),
     );
+
+    // Cascade-delete plants — each plant's images must be removed first
+    let plants = await ctx.db
+      .query("plants")
+      .withIndex("by_plantBoxId", (q) => q.eq("plantBoxId", args.plantBoxId))
+      .take(256);
+    while (plants.length > 0) {
+      for (const plant of plants) {
+        await batchDelete(ctx, () =>
+          ctx.db
+            .query("plantImages")
+            .withIndex("by_plantId", (q) => q.eq("plantId", plant._id))
+            .take(256),
+        );
+        await ctx.db.delete(plant._id);
+      }
+      plants = await ctx.db
+        .query("plants")
+        .withIndex("by_plantBoxId", (q) => q.eq("plantBoxId", args.plantBoxId))
+        .take(256);
+    }
 
     await batchDelete(ctx, () =>
       ctx.db

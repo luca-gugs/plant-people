@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router";
 import { motion } from "framer-motion";
 import { ArrowLeft, Search, Plus } from "lucide-react";
@@ -40,20 +41,14 @@ export default function PlantBoxHeader({
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         {/* Left: title & description */}
         <div>
-          <span className="label-wide block mb-2">
-            Herbarium Personal Archive
-          </span>
+          <span className="label-wide block mb-2">Station:</span>
           <h1
             className="text-5xl md:text-6xl font-light italic text-botanical"
             style={{ fontFamily: "Georgia, serif" }}
           >
             {box.name}
           </h1>
-          {box.description && (
-            <p className="mt-4 text-muted-italic max-w-md leading-relaxed italic opacity-80">
-              {box.description}
-            </p>
-          )}
+          {box.description && <ExpandableDescription text={box.description} />}
         </div>
 
         {/* Right: search + button */}
@@ -78,5 +73,29 @@ export default function PlantBoxHeader({
         </div>
       </div>
     </motion.header>
+  );
+}
+
+function ExpandableDescription({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="mt-4 max-w-md">
+      <div
+        className={`overflow-hidden transition-[max-height] duration-500 ease-in-out ${
+          expanded ? "max-h-96" : "max-h-[3.25em]"
+        }`}
+      >
+        <p className="text-muted-italic leading-relaxed italic opacity-80">
+          {text}
+        </p>
+      </div>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="text-xs text-ink-faint hover:text-botanical transition-colors mt-1 italic"
+      >
+        {expanded ? "Show less" : "Read more"}
+      </button>
+    </div>
   );
 }

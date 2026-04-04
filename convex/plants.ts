@@ -1,7 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { requireUser } from "./helpers";
+import { requireUser, batchDelete } from "./helpers";
 
 // ─── List ───
 // Returns all plants for a given plant box
@@ -93,6 +93,14 @@ export const remove = mutation({
     const box = await ctx.db.get("plantBoxes", plant.plantBoxId);
     if (box === null || box.householdId !== user.householdId)
       throw new Error("Not authorized");
+
+    // Cascade-delete plant images before removing the plant
+    await batchDelete(ctx, () =>
+      ctx.db
+        .query("plantImages")
+        .withIndex("by_plantId", (q) => q.eq("plantId", args.plantId))
+        .take(256),
+    );
 
     await ctx.db.delete(args.plantId);
   },

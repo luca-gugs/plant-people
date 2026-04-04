@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router";
+import RootLayout from "./layouts/root-layout";
 import AuthLayout from "./layouts/auth-layout";
 import HouseholdLayout from "./layouts/household-layout";
 import Landing from "./pages/landing/page";
@@ -11,6 +12,7 @@ import Components from "./components/components";
 
 export const router = createBrowserRouter([
   {
+    element: <RootLayout />,
     children: [
       // Public routes
       { index: true, element: <Landing /> },

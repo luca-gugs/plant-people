@@ -340,25 +340,8 @@ export default function Components() {
                 </div>
               </div>
             </div>
-
-            {/* Decorative Element */}
-            <div className="opacity-30 flex flex-col items-center justify-center p-4">
-              <div className="divider-botanical mb-4" />
-              <p className="text-[10px] uppercase tracking-[0.5em] text-center">
-                In Omnibus Glorificetur Deus
-              </p>
-              <div className="divider-botanical mt-4" />
-            </div>
           </aside>
         </div>
-
-        {/* ─── Footer ─── */}
-        <footer className="mt-20 py-12 border-t border-border/60 text-center">
-          <p className="label-sm mb-2">Meticulously cataloged and curated</p>
-          <p className="text-xs italic text-ink-muted">
-            Est. MMXXIII — A Private Botanical Collection
-          </p>
-        </footer>
       </div>
     </div>
   );
